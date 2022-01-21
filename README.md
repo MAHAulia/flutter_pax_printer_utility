@@ -1,15 +1,38 @@
 # flutter_pax_printer_utility
 
-Plugin to access pax printer command
+#### This package based on [PAX Device](https://docs.hips.com/docs/pax-a920 "PAX Device") SDK
 
-## Getting Started
+## Important: 
+  **THIS PACKAGE WILL WORK ONLY IN ANDROID!**
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+## Installation  
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub add flutter_pax_printer_utility
+```
+
+## What this package do
+- [x] Write some text 
+- [ ] Change font size
+- [ ] Jump (n) lines
+- [ ] Draw a divisor line
+- [ ] Bold mode on/off
+- [ ] Print all types of Barcodes (see enum below)
+- [ ] Print Qrcodes with custom width and error-level
+- [ ] Print image from asset or from web (example show how to print both)
+- [ ] Print rows like recepit with custom width and alignment
+- [ ] Able to combine with some esc/pos code that you already have!
+- [ ] Cut paper - Dedicated method just to cut the line
+- [ ] Printer serial no - Get the serial number of the printer
+- [ ] Printer version - Get the printer's version
+- [ ] Printer paper size - Get the paper size ( 0: 80mm 1: 58mm)
+
+## If you have an Pax Terminal printer and want to help me with the Pax functions just contact me
+
+## Tested Devices
+
+```bash
+PAX A920 
+```
+
 
