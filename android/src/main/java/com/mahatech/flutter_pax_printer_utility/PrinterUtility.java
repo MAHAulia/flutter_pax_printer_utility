@@ -28,10 +28,10 @@ public class PrinterUtility {
                 long start = System.currentTimeMillis();
                 dal = NeptuneLiteUser.getInstance().getDal(this._context);
                 Log.i("Test","Get dal cost:"+(System.currentTimeMillis() - start)+" ms");
-                Toast.makeText(this._context, "Get dal cost:"+(System.currentTimeMillis() - start)+" ms", Toast.LENGTH_LONG).show();
+                // Toast.makeText(this._context, "Get dal cost:"+(System.currentTimeMillis() - start)+" ms", Toast.LENGTH_LONG).show();
             } catch (Exception e) {
                 e.printStackTrace();
-                Toast.makeText(this._context, "error occurred,DAL is null.", Toast.LENGTH_LONG).show();
+                // Toast.makeText(this._context, "error occurred,DAL is null.", Toast.LENGTH_LONG).show();
             }
         }
         return dal;
@@ -42,7 +42,7 @@ public class PrinterUtility {
             printer = getDal().getPrinter();
             printer.init();
             Log.i("INIT",  "INIT");
-            Toast.makeText(this._context, "SUCCESS INIT PRINTER", Toast.LENGTH_LONG).show();
+            // Toast.makeText(this._context, "SUCCESS INIT PRINTER", Toast.LENGTH_LONG).show();
         } catch (PrinterDevException e) {
             e.printStackTrace();
             Log.e("INIT",  String.valueOf(e));
@@ -53,7 +53,7 @@ public class PrinterUtility {
         try {
             int status = printer.getStatus();
             Log.i("STATUS",  String.valueOf(status));
-            Toast.makeText(this._context, "STATUS : " + String.valueOf(status), Toast.LENGTH_LONG).show();
+            // Toast.makeText(this._context, "STATUS : " + String.valueOf(status), Toast.LENGTH_LONG).show();
             return statusCode2Str(status);
         } catch (PrinterDevException e) {
             e.printStackTrace();
