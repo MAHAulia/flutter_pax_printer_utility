@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -55,6 +57,18 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  preparePrint() async {
+    await FlutterPaxPrinterUtility.init();
+    await FlutterPaxPrinterUtility.fontSet(
+        EFontTypeAscii.FONT_12_24, EFontTypeExtCode.FONT_16_16);
+    await FlutterPaxPrinterUtility.spaceSet(0, 10);
+    await FlutterPaxPrinterUtility.setGray(1);
+    await FlutterPaxPrinterUtility.printStr("TEST PRINT", null);
+    await FlutterPaxPrinterUtility.step(150);
+    String? status = await FlutterPaxPrinterUtility.start();
+    log(status.toString());
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -97,6 +111,17 @@ class _MyAppState extends State<MyApp> {
               ],
             ),
           ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            try {
+              preparePrint();
+            } catch (e) {
+              log(e.toString());
+            }
+          },
+          backgroundColor: Colors.black,
+          child: const Icon(Icons.print_rounded),
         ),
       ),
     );
