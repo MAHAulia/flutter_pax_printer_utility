@@ -69,6 +69,25 @@ class _MyAppState extends State<MyApp> {
     log(status.toString());
   }
 
+  printQrCode() async {
+    await FlutterPaxPrinterUtility.bindPrinter;
+    await FlutterPaxPrinterUtility.fontSet(
+        EFontTypeAscii.FONT_24_24, EFontTypeExtCode.FONT_24_24);
+    await FlutterPaxPrinterUtility.spaceSet(0, 10);
+    await FlutterPaxPrinterUtility.setGray(1);
+    await FlutterPaxPrinterUtility.printStr('SILAHKAN SCAN QRCODE', null);
+    await FlutterPaxPrinterUtility.printStr('\n\n', null);
+    await FlutterPaxPrinterUtility.printStr('ID1782363', null);
+    await FlutterPaxPrinterUtility.printStr('\n', null);
+    await FlutterPaxPrinterUtility.printStr('001', null);
+    await FlutterPaxPrinterUtility.printQRCode(
+        '190237901273akshfaksdh', 512, 512);
+    await FlutterPaxPrinterUtility.printStr('BAKSO', null);
+    await FlutterPaxPrinterUtility.step(150);
+    var status = await FlutterPaxPrinterUtility.start();
+    return status;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -106,6 +125,13 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () => FlutterPaxPrinterUtility.printReceipt(
                         "TEST PRINT\n\nOK SUCCESS PRINTING\n\n"),
                     child: const Text("TEST PRINT"),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => printQrCode(),
+                    child: const Text("TEST PRINT QRCODE"),
                   ),
                 ),
               ],

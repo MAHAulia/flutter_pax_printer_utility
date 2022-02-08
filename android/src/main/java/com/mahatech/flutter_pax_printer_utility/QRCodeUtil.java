@@ -1,3 +1,5 @@
+package com.mahatech.flutter_pax_printer_utility;
+
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
@@ -7,8 +9,9 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 
 public class QRCodeUtil {
+    private static QRCodeUtil qrCodeUtil;
 
-    private QRCodeUtil() {}
+    public QRCodeUtil() {}
 
     public static Bitmap encodeAsBitmap(String source, int width, int height) {
         BitMatrix result;

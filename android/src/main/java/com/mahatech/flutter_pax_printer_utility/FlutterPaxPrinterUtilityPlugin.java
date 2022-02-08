@@ -2,6 +2,7 @@ package com.mahatech.flutter_pax_printer_utility;
 
 import static java.lang.Byte.parseByte;
 
+import android.graphics.Bitmap;
 import android.util.Printer;
 
 import androidx.annotation.NonNull;
@@ -85,11 +86,13 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       printerUtility.spaceSet(parseByte("0"), parseByte("10"));
       printerUtility.setGray(1);
       printerUtility.printStr(text1, null);
+      printerUtility.printStr("", null);
       printerUtility.printStr(text2, null);
+      printerUtility.printStr(text3, null);
       printerUtility.printStr("", null);
       printerUtility.printBitmap(qrcodeUtility.encodeAsBitmap(qrString, 512, 512 ));
       printerUtility.printStr("", null);
-      printerUtility.printStr(text3, null);
+      printerUtility.printStr(text4, null);
       printerUtility.step(150);
       final String status = printerUtility.start();
       result.success(status);
@@ -98,8 +101,60 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       printerUtility.init();
       result.success(true);
     } else if (call.method.equals("fontSet")) {
-      EFontTypeAscii asciiFontType = call.argument("asciiFontType");
-      EFontTypeExtCode cFontType = call.argument("cFontType");
+      String asciiFontTypeString = call.argument("asciiFontType");
+      String cFontTypeString = call.argument("cFontType");
+
+      EFontTypeAscii asciiFontType;
+      EFontTypeExtCode cFontType;
+
+      if (asciiFontTypeString.equals("FONT_8_16")) {
+        asciiFontType = EFontTypeAscii.FONT_8_16;
+      } else if (asciiFontTypeString.equals("FONT_16_24")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_12_24")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_8_32")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_16_48")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_12_48")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_16_16")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_32_24")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_24_24")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_16_32")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_32_48")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      }else if (asciiFontTypeString.equals("FONT_24_48")) {
+        asciiFontType = EFontTypeAscii.FONT_16_24;
+      } else {
+        asciiFontType = EFontTypeAscii.FONT_8_16;
+      }
+
+      if (cFontTypeString.equals("FONT_16_16")) {
+        cFontType = EFontTypeExtCode.FONT_16_16;
+      } else if (cFontTypeString.equals("FONT_24_24")) {
+        cFontType = EFontTypeExtCode.FONT_24_24;
+      }else if (cFontTypeString.equals("FONT_16_32")) {
+        cFontType = EFontTypeExtCode.FONT_16_32;
+      }else if (cFontTypeString.equals("FONT_24_48")) {
+        cFontType = EFontTypeExtCode.FONT_24_48;
+      }else if (cFontTypeString.equals("FONT_32_16")) {
+        cFontType = EFontTypeExtCode.FONT_32_16;
+      }else if (cFontTypeString.equals("FONT_48_24")) {
+        cFontType = EFontTypeExtCode.FONT_48_24;
+      }else if (cFontTypeString.equals("FONT_32_32")) {
+        cFontType = EFontTypeExtCode.FONT_32_32;
+      }else if (cFontTypeString.equals("FONT_48_48")) {
+        cFontType = EFontTypeExtCode.FONT_48_48;
+      } else {
+        cFontType = EFontTypeExtCode.FONT_16_16;
+      }
+      
       printerUtility.fontSet(asciiFontType, cFontType);
       result.success(true);
     } else if (call.method.equals("spaceSet")) {
@@ -121,7 +176,7 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       printerUtility.printBitmap(bitmap);
       result.success(true);
     } else if (call.method.equals("printQRCode")) {
-      String text = call.argument("text");
+      String qrString = call.argument("text");
       int width = call.argument("width");
       int height = call.argument("height");
       printerUtility.printBitmap(qrcodeUtility.encodeAsBitmap(qrString, width, height ));

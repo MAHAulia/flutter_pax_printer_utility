@@ -58,8 +58,8 @@ class FlutterPaxPrinterUtility {
   static Future<bool?> fontSet(
       EFontTypeAscii asciiFontType, EFontTypeExtCode cFontType) async {
     Map<String, dynamic> arguments = {
-      "asciiFontType": asciiFontType,
-      "cFontType": cFontType,
+      "asciiFontType": asciiFontType.toString(),
+      "cFontType": cFontType.toString(),
     };
     final bool? response = await _channel.invokeMethod('fontSet', arguments);
     return response;
@@ -167,63 +167,43 @@ class FlutterPaxPrinterUtility {
 }
 
 class EFontTypeAscii {
-  final Uint8List _value;
+  final String _value;
   const EFontTypeAscii._internal(this._value);
 
   @override
   toString() => 'Enum.$_value';
 
-  static final FONT_8_16 =
-      EFontTypeAscii._internal(Uint8List.fromList('0'.codeUnits));
+  static final FONT_8_16 = EFontTypeAscii._internal('FONT_8_16');
 
-  static final FONT_16_24 =
-      EFontTypeAscii._internal(Uint8List.fromList('1'.codeUnits));
-  static final FONT_12_24 =
-      EFontTypeAscii._internal(Uint8List.fromList('1'.codeUnits));
-  static final FONT_8_32 =
-      EFontTypeAscii._internal(Uint8List.fromList('2'.codeUnits));
+  static final FONT_16_24 = EFontTypeAscii._internal('FONT_16_24');
+  static final FONT_12_24 = EFontTypeAscii._internal('FONT_12_24');
+  static final FONT_8_32 = EFontTypeAscii._internal('FONT_8_32');
 
-  static final FONT_16_48 =
-      EFontTypeAscii._internal(Uint8List.fromList('3'.codeUnits));
-  static final FONT_12_48 =
-      EFontTypeAscii._internal(Uint8List.fromList('3'.codeUnits));
-  static final FONT_16_16 =
-      EFontTypeAscii._internal(Uint8List.fromList('4'.codeUnits));
+  static final FONT_16_48 = EFontTypeAscii._internal('FONT_16_48');
+  static final FONT_12_48 = EFontTypeAscii._internal('FONT_12_48');
+  static final FONT_16_16 = EFontTypeAscii._internal('FONT_16_16');
 
-  static final FONT_32_24 =
-      EFontTypeAscii._internal(Uint8List.fromList('5'.codeUnits));
-  static final FONT_24_24 =
-      EFontTypeAscii._internal(Uint8List.fromList('5'.codeUnits));
-  static final FONT_16_32 =
-      EFontTypeAscii._internal(Uint8List.fromList('6'.codeUnits));
+  static final FONT_32_24 = EFontTypeAscii._internal('FONT_32_24');
+  static final FONT_24_24 = EFontTypeAscii._internal('FONT_24_24');
+  static final FONT_16_32 = EFontTypeAscii._internal('FONT_16_32');
 
-  static final FONT_32_48 =
-      EFontTypeAscii._internal(Uint8List.fromList('7'.codeUnits));
-  static final FONT_24_48 =
-      EFontTypeAscii._internal(Uint8List.fromList('7'.codeUnits));
+  static final FONT_32_48 = EFontTypeAscii._internal('FONT_32_48');
+  static final FONT_24_48 = EFontTypeAscii._internal('FONT_24_48');
 }
 
 class EFontTypeExtCode {
-  final Uint8List _value;
+  final String _value;
   const EFontTypeExtCode._internal(this._value);
 
   @override
   toString() => 'Enum.$_value';
 
-  static final FONT_16_16 =
-      EFontTypeExtCode._internal(Uint8List.fromList('0'.codeUnits));
-  static final FONT_24_24 =
-      EFontTypeExtCode._internal(Uint8List.fromList('1'.codeUnits));
-  static final FONT_16_32 =
-      EFontTypeExtCode._internal(Uint8List.fromList('2'.codeUnits));
-  static final FONT_24_48 =
-      EFontTypeExtCode._internal(Uint8List.fromList('3'.codeUnits));
-  static final FONT_32_16 =
-      EFontTypeExtCode._internal(Uint8List.fromList('4'.codeUnits));
-  static final FONT_48_24 =
-      EFontTypeExtCode._internal(Uint8List.fromList('5'.codeUnits));
-  static final FONT_32_32 =
-      EFontTypeExtCode._internal(Uint8List.fromList('6'.codeUnits));
-  static final FONT_48_48 =
-      EFontTypeExtCode._internal(Uint8List.fromList('7'.codeUnits));
+  static final FONT_16_16 = EFontTypeExtCode._internal('FONT_16_16');
+  static final FONT_24_24 = EFontTypeExtCode._internal('FONT_24_24');
+  static final FONT_16_32 = EFontTypeExtCode._internal('FONT_16_32');
+  static final FONT_24_48 = EFontTypeExtCode._internal('FONT_24_48');
+  static final FONT_32_16 = EFontTypeExtCode._internal('FONT_32_16');
+  static final FONT_48_24 = EFontTypeExtCode._internal('FONT_48_24');
+  static final FONT_32_32 = EFontTypeExtCode._internal('FONT_32_32');
+  static final FONT_48_48 = EFontTypeExtCode._internal('FONT_48_48');
 }
