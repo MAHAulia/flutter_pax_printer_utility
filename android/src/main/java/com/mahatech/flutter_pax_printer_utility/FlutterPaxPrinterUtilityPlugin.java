@@ -79,6 +79,7 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       String text1 = call.argument("text1");
       String text2 = call.argument("text2");
       String text3 = call.argument("text3");
+      String text4 = call.argument("text4");
       String qrString = call.argument("qr_string");
       printerUtility.getDal();
       printerUtility.init();

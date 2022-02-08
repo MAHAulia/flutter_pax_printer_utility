@@ -38,12 +38,13 @@ class FlutterPaxPrinterUtility {
     return response;
   }
 
-  static Future<String?> printQRReceipt(
-      String text1, String text2, String text3, String qrString) async {
+  static Future<String?> printQRReceipt(String text1, String text2,
+      String text3, String text4, String qrString) async {
     Map<String, dynamic> arguments = {
       "text1": text1.replaceAll("\r", ""),
       "text2": text2.replaceAll("\r", ""),
       "text3": text3.replaceAll("\r", ""),
+      "text4": text4.replaceAll("\r", ""),
       "qr_string": qrString
     };
     final String? response = await _channel.invokeMethod('printQR', arguments);
