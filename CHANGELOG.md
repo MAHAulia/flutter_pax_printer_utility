@@ -13,3 +13,7 @@
 ## 0.0.4
 
 * Fix Generate QR with template
+
+## 0.1.0
+
+* Add printImageUrl and printImageAsset

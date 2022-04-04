@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -88,6 +87,33 @@ class _MyAppState extends State<MyApp> {
     return status;
   }
 
+  printImage() async {
+    await FlutterPaxPrinterUtility.bindPrinter;
+    await FlutterPaxPrinterUtility.fontSet(
+        EFontTypeAscii.FONT_24_24, EFontTypeExtCode.FONT_24_24);
+    await FlutterPaxPrinterUtility.spaceSet(0, 10);
+    await FlutterPaxPrinterUtility.setGray(1);
+    await FlutterPaxPrinterUtility.printStr('TEST PRINT IMAGE', null);
+    await FlutterPaxPrinterUtility.printImageAsset('assets/images/maha.png');
+    await FlutterPaxPrinterUtility.step(150);
+    var status = await FlutterPaxPrinterUtility.start();
+    return status;
+  }
+
+  printImageNetwork() async {
+    await FlutterPaxPrinterUtility.bindPrinter;
+    await FlutterPaxPrinterUtility.fontSet(
+        EFontTypeAscii.FONT_24_24, EFontTypeExtCode.FONT_24_24);
+    await FlutterPaxPrinterUtility.spaceSet(0, 10);
+    await FlutterPaxPrinterUtility.setGray(1);
+    await FlutterPaxPrinterUtility.printStr('TEST PRINT IMAGE NETWORK', null);
+    await FlutterPaxPrinterUtility.printImageUrl(
+        "http://pudim.com.br/pudim.jpg");
+    await FlutterPaxPrinterUtility.step(150);
+    var status = await FlutterPaxPrinterUtility.start();
+    return status;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -132,6 +158,20 @@ class _MyAppState extends State<MyApp> {
                   child: ElevatedButton(
                     onPressed: () => printQrCode(),
                     child: const Text("TEST PRINT QRCODE"),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => printImageNetwork(),
+                    child: const Text("TEST PRINT IMAGE NETWORK"),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => printImage(),
+                    child: const Text("TEST PRINT IMAGE"),
                   ),
                 ),
               ],

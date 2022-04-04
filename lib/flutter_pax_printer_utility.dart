@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:bitmap/bitmap.dart';
 import 'package:flutter/services.dart';
 
 class FlutterPaxPrinterUtility {
@@ -92,13 +91,43 @@ class FlutterPaxPrinterUtility {
     return response;
   }
 
-  static Future<bool?> printBitmap(Bitmap bitmap) async {
+  static Future<bool?> printBitmap(dynamic bitmap) async {
     Map<String, dynamic> arguments = {
       "bitmap": bitmap,
     };
     final bool? response =
         await _channel.invokeMethod('printBitmap', arguments);
     return response;
+  }
+
+  static Future<bool?> printImageUrl(dynamic url) async {
+    Map<String, dynamic> arguments = {
+      "url": url,
+    };
+    final bool? response =
+        await _channel.invokeMethod('printImageUrl', arguments);
+    return response;
+  }
+
+  static Future<bool?> printImageAsset(String img) async {
+    Uint8List byte = await FlutterPaxPrinterUtility().getImageFromAsset(img);
+    Map<String, dynamic> arguments = {
+      "bitmap": byte,
+    };
+    final bool? response =
+        await _channel.invokeMethod('printImageAsset', arguments);
+    return response;
+  }
+
+  Future<Uint8List> getImageFromAsset(String iconPath) async {
+    return await readFileBytes(iconPath);
+  }
+
+  Future<Uint8List> readFileBytes(String path) async {
+    ByteData fileData = await rootBundle.load(path);
+    Uint8List fileUnit8List = fileData.buffer
+        .asUint8List(fileData.offsetInBytes, fileData.lengthInBytes);
+    return fileUnit8List;
   }
 
   static Future<bool?> printQRCode(String text, int width, int height) async {
