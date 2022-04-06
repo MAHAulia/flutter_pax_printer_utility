@@ -140,7 +140,7 @@ public class PrinterUtility {
 
     }
 
-    public void leftIndents(short indent) {
+    public void leftIndents(int indent) {
         try {
             printer.leftIndent(indent);
             Log.i("LIND",  "LEFT INDENT");
