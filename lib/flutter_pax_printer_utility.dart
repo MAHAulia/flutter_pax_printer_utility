@@ -196,6 +196,23 @@ class FlutterPaxPrinterUtility {
   }
 }
 
+/// asciiFontType - EFontTypeAscii
+///
+/// EFontTypeAscii.FONT_8_16:8x16 font (Basic)
+///
+/// EFontTypeAscii.FONT_12_24:12x24 font (Basic)
+///
+/// EFontTypeAscii.FONT_8_32:8x16 font (enlarge vertically)
+///
+/// EFontTypeAscii.FONT_12_48:12x24 font (enlarge vertically)
+///
+/// EFontTypeAscii.FONT_16_16:8x16 font (enlarge horizontally)
+///
+/// EFontTypeAscii.FONT_24_24:12x24 font (enlarge horizontally)
+///
+/// EFontTypeAscii.FONT_16_32:8x16 font (enlarge on both levels)
+///
+/// EFontTypeAscii.FONT_24_48:12x24 font (enlarge on both levels)
 class EFontTypeAscii {
   final String _value;
   const EFontTypeAscii._internal(this._value);
@@ -221,6 +238,23 @@ class EFontTypeAscii {
   static const FONT_24_48 = EFontTypeAscii._internal('FONT_24_48');
 }
 
+/// fontTypeExtCode - EFontTypeExtCode font set for extended code characters
+///
+/// FONT_16_16 -16x16 font (Basic)
+///
+/// FONT_24_24 -24x24 font (Basic)
+///
+/// FONT_16_32 -16x16 font (enlarge vertically)
+///
+/// FONT_24_48 -24x24 font (enlarge vertically)
+///
+/// FONT_48_24 -16x16 font (enlarge horizontally)
+///
+/// FONT_32_32 -24x24 font (enlarge horizontally)
+///
+/// FONT_48_24 -16x16 font (enlarge on both levels)
+///
+/// FONT_48_48 -24x24 font (enlarge on both levels)
 class EFontTypeExtCode {
   final String _value;
   const EFontTypeExtCode._internal(this._value);
