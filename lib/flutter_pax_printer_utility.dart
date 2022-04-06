@@ -201,7 +201,7 @@ class EFontTypeAscii {
   const EFontTypeAscii._internal(this._value);
 
   @override
-  toString() => 'Enum.$_value';
+  toString() => _value;
 
   static const FONT_8_16 = EFontTypeAscii._internal('FONT_8_16');
 
@@ -226,7 +226,7 @@ class EFontTypeExtCode {
   const EFontTypeExtCode._internal(this._value);
 
   @override
-  toString() => 'Enum.$_value';
+  toString() => _value;
 
   static const FONT_16_16 = EFontTypeExtCode._internal('FONT_16_16');
   static const FONT_24_24 = EFontTypeExtCode._internal('FONT_24_24');

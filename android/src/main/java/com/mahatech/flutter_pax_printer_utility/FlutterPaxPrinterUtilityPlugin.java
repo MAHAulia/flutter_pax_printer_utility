@@ -51,7 +51,7 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       String text = call.argument("text");
       printerUtility.getDal();
       printerUtility.init();
-      printerUtility.fontSet(EFontTypeAscii.FONT_32_48, EFontTypeExtCode.FONT_48_48);
+      printerUtility.fontSet(EFontTypeAscii.FONT_8_16, EFontTypeExtCode.FONT_16_16);
       printerUtility.spaceSet(parseByte("0"), parseByte("10"));
       printerUtility.setGray(1);
       printerUtility.printStr(text, null);
