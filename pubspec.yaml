@@ -1,6 +1,6 @@
 name: flutter_pax_printer_utility
 description: Plugin to access pax printer A920 command
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/AuliaVailo/flutter_pax_printer_utility
 
 environment:

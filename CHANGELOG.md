@@ -17,3 +17,8 @@
 ## 0.1.0
 
 * Add printImageUrl and printImageAsset
+
+## 0.1.1
+
+* Fix set indent function
+* Fix implementation of set font size
