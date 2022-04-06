@@ -148,8 +148,10 @@ class _MyAppState extends State<MyApp> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => FlutterPaxPrinterUtility.printReceipt(
-                        "TEST PRINT\n\nOK SUCCESS PRINTING\n\n"),
+                    onPressed: () async {
+                      await FlutterPaxPrinterUtility.printReceipt(
+                          "TEST PRINT\n\nOK SUCCESS PRINTING\n\n");
+                    },
                     child: const Text("TEST PRINT"),
                   ),
                 ),

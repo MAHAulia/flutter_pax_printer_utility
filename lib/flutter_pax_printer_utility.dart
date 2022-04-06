@@ -196,44 +196,78 @@ class FlutterPaxPrinterUtility {
   }
 }
 
+/// asciiFontType - EFontTypeAscii
+///
+/// EFontTypeAscii.FONT_8_16:8x16 font (Basic)
+///
+/// EFontTypeAscii.FONT_12_24:12x24 font (Basic)
+///
+/// EFontTypeAscii.FONT_8_32:8x16 font (enlarge vertically)
+///
+/// EFontTypeAscii.FONT_12_48:12x24 font (enlarge vertically)
+///
+/// EFontTypeAscii.FONT_16_16:8x16 font (enlarge horizontally)
+///
+/// EFontTypeAscii.FONT_24_24:12x24 font (enlarge horizontally)
+///
+/// EFontTypeAscii.FONT_16_32:8x16 font (enlarge on both levels)
+///
+/// EFontTypeAscii.FONT_24_48:12x24 font (enlarge on both levels)
 class EFontTypeAscii {
   final String _value;
   const EFontTypeAscii._internal(this._value);
 
   @override
-  toString() => 'Enum.$_value';
+  toString() => _value;
 
-  static final FONT_8_16 = EFontTypeAscii._internal('FONT_8_16');
+  static const FONT_8_16 = EFontTypeAscii._internal('FONT_8_16');
 
-  static final FONT_16_24 = EFontTypeAscii._internal('FONT_16_24');
-  static final FONT_12_24 = EFontTypeAscii._internal('FONT_12_24');
-  static final FONT_8_32 = EFontTypeAscii._internal('FONT_8_32');
+  static const FONT_16_24 = EFontTypeAscii._internal('FONT_16_24');
+  static const FONT_12_24 = EFontTypeAscii._internal('FONT_12_24');
+  static const FONT_8_32 = EFontTypeAscii._internal('FONT_8_32');
 
-  static final FONT_16_48 = EFontTypeAscii._internal('FONT_16_48');
-  static final FONT_12_48 = EFontTypeAscii._internal('FONT_12_48');
-  static final FONT_16_16 = EFontTypeAscii._internal('FONT_16_16');
+  static const FONT_16_48 = EFontTypeAscii._internal('FONT_16_48');
+  static const FONT_12_48 = EFontTypeAscii._internal('FONT_12_48');
+  static const FONT_16_16 = EFontTypeAscii._internal('FONT_16_16');
 
-  static final FONT_32_24 = EFontTypeAscii._internal('FONT_32_24');
-  static final FONT_24_24 = EFontTypeAscii._internal('FONT_24_24');
-  static final FONT_16_32 = EFontTypeAscii._internal('FONT_16_32');
+  static const FONT_32_24 = EFontTypeAscii._internal('FONT_32_24');
+  static const FONT_24_24 = EFontTypeAscii._internal('FONT_24_24');
+  static const FONT_16_32 = EFontTypeAscii._internal('FONT_16_32');
 
-  static final FONT_32_48 = EFontTypeAscii._internal('FONT_32_48');
-  static final FONT_24_48 = EFontTypeAscii._internal('FONT_24_48');
+  static const FONT_32_48 = EFontTypeAscii._internal('FONT_32_48');
+  static const FONT_24_48 = EFontTypeAscii._internal('FONT_24_48');
 }
 
+/// fontTypeExtCode - EFontTypeExtCode font set for extended code characters
+///
+/// FONT_16_16 -16x16 font (Basic)
+///
+/// FONT_24_24 -24x24 font (Basic)
+///
+/// FONT_16_32 -16x16 font (enlarge vertically)
+///
+/// FONT_24_48 -24x24 font (enlarge vertically)
+///
+/// FONT_48_24 -16x16 font (enlarge horizontally)
+///
+/// FONT_32_32 -24x24 font (enlarge horizontally)
+///
+/// FONT_48_24 -16x16 font (enlarge on both levels)
+///
+/// FONT_48_48 -24x24 font (enlarge on both levels)
 class EFontTypeExtCode {
   final String _value;
   const EFontTypeExtCode._internal(this._value);
 
   @override
-  toString() => 'Enum.$_value';
+  toString() => _value;
 
-  static final FONT_16_16 = EFontTypeExtCode._internal('FONT_16_16');
-  static final FONT_24_24 = EFontTypeExtCode._internal('FONT_24_24');
-  static final FONT_16_32 = EFontTypeExtCode._internal('FONT_16_32');
-  static final FONT_24_48 = EFontTypeExtCode._internal('FONT_24_48');
-  static final FONT_32_16 = EFontTypeExtCode._internal('FONT_32_16');
-  static final FONT_48_24 = EFontTypeExtCode._internal('FONT_48_24');
-  static final FONT_32_32 = EFontTypeExtCode._internal('FONT_32_32');
-  static final FONT_48_48 = EFontTypeExtCode._internal('FONT_48_48');
+  static const FONT_16_16 = EFontTypeExtCode._internal('FONT_16_16');
+  static const FONT_24_24 = EFontTypeExtCode._internal('FONT_24_24');
+  static const FONT_16_32 = EFontTypeExtCode._internal('FONT_16_32');
+  static const FONT_24_48 = EFontTypeExtCode._internal('FONT_24_48');
+  static const FONT_32_16 = EFontTypeExtCode._internal('FONT_32_16');
+  static const FONT_48_24 = EFontTypeExtCode._internal('FONT_48_24');
+  static const FONT_32_32 = EFontTypeExtCode._internal('FONT_32_32');
+  static const FONT_48_48 = EFontTypeExtCode._internal('FONT_48_48');
 }
