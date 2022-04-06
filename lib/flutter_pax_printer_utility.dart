@@ -141,7 +141,7 @@ class FlutterPaxPrinterUtility {
     return response;
   }
 
-  static Future<bool?> leftIndents(String indent) async {
+  static Future<bool?> leftIndents(int indent) async {
     Map<String, dynamic> arguments = {
       "indent": indent,
     };

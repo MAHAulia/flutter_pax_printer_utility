@@ -207,7 +207,7 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       final String status = printerUtility.start();
       result.success(status);
     } else if (call.method.equals("leftIndents")) {
-      short indent = call.argument("indent");
+      int indent = call.argument("indent");
       printerUtility.leftIndents(indent);
       result.success(true);
     } else if (call.method.equals("getDotLine")) {
