@@ -22,3 +22,8 @@
 
 * Fix set indent function
 * Fix implementation of set font size
+
+## 0.1.2
+
+* Fix for release apk by adding some config on build.gradle
+* update readme about fix for release apk.

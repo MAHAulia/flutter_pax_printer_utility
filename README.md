@@ -11,6 +11,22 @@
 flutter pub add flutter_pax_printer_utility
 ```
 
+
+## Set minify and shrink on your buildtype gradle
+
+```bash
+add this line in your build.gradle
+buildTypes {
+    release {
+        .
+        .
+        .
+        minifyEnabled false
+        shrinkResources false
+    }
+}
+```
+
 ## What this package do
 - [x] Write some text 
 - [ ] Change font size
