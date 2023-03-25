@@ -1,8 +1,6 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, constant_identifier_names
 
 import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:flutter/services.dart';
 
 class FlutterPaxPrinterUtility {
@@ -14,14 +12,33 @@ class FlutterPaxPrinterUtility {
     return version;
   }
 
-  static Future<bool?> get bindPrinter async {
-    final bool? status = await _channel.invokeMethod('bindPrinter');
-    return status;
-  }
-
-  static Future<String?> get getStatus async {
+  static Future<PrinterStatus> get getStatus async {
     final String? status = await _channel.invokeMethod('getStatus');
-    return status;
+    print(status);
+    switch (status) {
+      case "Success":
+        return PrinterStatus.SUCCESS;
+      case "Printer is busy":
+        return PrinterStatus.PRINTER_IS_BUSY;
+      case "Out of paper":
+        return PrinterStatus.PRINTER_IS_BUSY;
+      case "The format of print data packet error":
+        return PrinterStatus.PRINTER_IS_BUSY;
+      case "Printer malfunctions":
+        return PrinterStatus.PRINTER_IS_BUSY;
+      case "Printer over heats":
+        return PrinterStatus.PRINTER_IS_BUSY;
+      case "Printer voltage is too low":
+        return PrinterStatus.PRINTER_IS_BUSY;
+      case "Printing is unfinished":
+        return PrinterStatus.PRINTER_IS_BUSY;
+      case "The printer has not installed font library":
+        return PrinterStatus.PRINTER_IS_BUSY;
+      case "Data package is too long":
+        return PrinterStatus.PRINTER_IS_BUSY;
+      default:
+        return PrinterStatus.UNKNOWN;
+    }
   }
 
   static Future<String?> printReceipt(String text) async {
@@ -50,9 +67,9 @@ class FlutterPaxPrinterUtility {
     return response;
   }
 
-  static Future<bool?> init() async {
-    final bool? response = await _channel.invokeMethod('init');
-    return response;
+  static Future<bool?> get init async {
+    final bool? status = await _channel.invokeMethod('init');
+    return status;
   }
 
   static Future<bool?> fontSet(
@@ -91,7 +108,7 @@ class FlutterPaxPrinterUtility {
     return response;
   }
 
-  static Future<bool?> printBitmap(dynamic bitmap) async {
+  static Future<bool?> printBitmap(Uint8List bitmap) async {
     Map<String, dynamic> arguments = {
       "bitmap": bitmap,
     };
@@ -100,7 +117,7 @@ class FlutterPaxPrinterUtility {
     return response;
   }
 
-  static Future<bool?> printImageUrl(dynamic url) async {
+  static Future<bool?> printImageUrl(String url) async {
     Map<String, dynamic> arguments = {
       "url": url,
     };
@@ -179,6 +196,17 @@ class FlutterPaxPrinterUtility {
     return response;
   }
 
+  static Future<bool?> setDoubleHeight(
+      bool isAscDouble, bool isLocalDouble) async {
+    Map<String, dynamic> arguments = {
+      "isAscDouble": isAscDouble,
+      "isLocalDouble": isLocalDouble,
+    };
+    final bool? response =
+        await _channel.invokeMethod('setDoubleHeight', arguments);
+    return response;
+  }
+
   static Future<bool?> setInvert(bool isInvert) async {
     Map<String, dynamic> arguments = {
       "isInvert": isInvert,
@@ -194,6 +222,20 @@ class FlutterPaxPrinterUtility {
     final bool? response = await _channel.invokeMethod('cutPaper', arguments);
     return response;
   }
+}
+
+enum PrinterStatus {
+  UNKNOWN,
+  SUCCESS,
+  PRINTER_IS_BUSY,
+  OUT_OF_PAPER,
+  FORMAT_PRINT_PACKET_ERROR,
+  PRINTER_MALFUCTION,
+  PRINTER_OVER_HEATS,
+  PRINTER_VOLTAGE_IS_TO_LOW,
+  PRINTING_IS_UNFINISHED,
+  FONT_LIBRARY_NOT_INSTALLED,
+  DATA_PACKAGE_TO_LONG
 }
 
 /// asciiFontType - EFontTypeAscii

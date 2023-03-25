@@ -27,3 +27,12 @@
 
 * Fix for release apk by adding some config on build.gradle
 * update readme about fix for release apk.
+
+## 0.1.3
+
+* (update) Remove bind bindPrinter
+* (update) Replace init() with init
+* (update) Replace bindPrinter with init
+* (update) Change getStatus response from string to enum PrinterStatus
+* (fix) Print Bitmap Function
+* (update) Add example Print Bitmap Receipt

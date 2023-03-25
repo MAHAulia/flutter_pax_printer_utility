@@ -40,7 +40,7 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
-    } else if (call.method.equals("bindPrinter")) { // instant bind
+    } else if (call.method.equals("init")) { // instant bind or init
       printerUtility.getDal();
       printerUtility.init();
       result.success(true);
@@ -98,10 +98,6 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       printerUtility.step(150);
       final String status = printerUtility.start();
       result.success(status);
-    } else if (call.method.equals("init")) { 
-      printerUtility.getDal();
-      printerUtility.init();
-      result.success(true);
     } else if (call.method.equals("fontSet")) {
       String asciiFontTypeString = call.argument("asciiFontType");
       String cFontTypeString = call.argument("cFontType");
@@ -174,7 +170,8 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       printerUtility.step(step);
       result.success(true);
     } else if (call.method.equals("printBitmap")) {
-      Bitmap bitmap = call.argument("bitmap");
+      byte[] bytes = call.argument("bitmap");
+      Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
       printerUtility.printBitmap(bitmap);
       result.success(true);
     } else if (call.method.equals("printImageUrl")) {
@@ -221,6 +218,11 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       boolean isAscDouble = call.argument("isAscDouble");
       boolean isLocalDouble = call.argument("isLocalDouble");
       printerUtility.setDoubleWidth(isAscDouble, isLocalDouble);
+      result.success(true);
+    } else if (call.method.equals("setDoubleHeight")) {
+      boolean isAscDouble = call.argument("isAscDouble");
+      boolean isLocalDouble = call.argument("isLocalDouble");
+      printerUtility.setDoubleHeight(isAscDouble, isLocalDouble);
       result.success(true);
     } else if (call.method.equals("setInvert")) {
       boolean isInvert = call.argument("isInvert");
