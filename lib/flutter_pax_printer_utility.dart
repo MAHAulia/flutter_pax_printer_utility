@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names, constant_identifier_names
 
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/services.dart';
 
 class FlutterPaxPrinterUtility {
@@ -14,7 +15,6 @@ class FlutterPaxPrinterUtility {
 
   static Future<PrinterStatus> get getStatus async {
     final String? status = await _channel.invokeMethod('getStatus');
-    print(status);
     switch (status) {
       case "Success":
         return PrinterStatus.SUCCESS;
