@@ -56,7 +56,7 @@ buildTypes {
 - Template Print Receipt => printReceipt
 - Tempalte Print QR with info => printQRReceipt
 
-## If you have an Pax Terminal printer and want to help me with the Pax functions just [Contact Me](https://saweria.co/overlays/qr?streamKey=54dc04b8045bb0355cde915ab1bb85b5&topLabel=MAHA&bottomLabel=Buy+Me+A+Coffe&backgroundColor=%232b9dfaFF&barcodeColor=%23000&username=maha)
+## If you have an Pax Terminal printer and need help with integration process, just [Contact Me](https://saweria.co/overlays/qr?streamKey=54dc04b8045bb0355cde915ab1bb85b5&topLabel=MAHA&bottomLabel=Buy+Me+A+Coffe&backgroundColor=%232b9dfaFF&barcodeColor=%23000&username=maha)
 
  - [Github](https://github.com/AuliaVailo)
  - [Email](mailto:abdul.haq.aulia@gmail.com)
