@@ -20,21 +20,21 @@ class FlutterPaxPrinterUtility {
       case "Printer is busy":
         return PrinterStatus.PRINTER_IS_BUSY;
       case "Out of paper":
-        return PrinterStatus.PRINTER_IS_BUSY;
+        return PrinterStatus.OUT_OF_PAPER;
       case "The format of print data packet error":
-        return PrinterStatus.PRINTER_IS_BUSY;
+        return PrinterStatus.FORMAT_PRINT_PACKET_ERROR;
       case "Printer malfunctions":
-        return PrinterStatus.PRINTER_IS_BUSY;
+        return PrinterStatus.PRINTER_MALFUCTION;
       case "Printer over heats":
-        return PrinterStatus.PRINTER_IS_BUSY;
+        return PrinterStatus.PRINTER_OVER_HEATS;
       case "Printer voltage is too low":
-        return PrinterStatus.PRINTER_IS_BUSY;
+        return PrinterStatus.PRINTER_VOLTAGE_IS_TO_LOW;
       case "Printing is unfinished":
-        return PrinterStatus.PRINTER_IS_BUSY;
+        return PrinterStatus.PRINTING_IS_UNFINISHED;
       case "The printer has not installed font library":
-        return PrinterStatus.PRINTER_IS_BUSY;
+        return PrinterStatus.FONT_LIBRARY_NOT_INSTALLED;
       case "Data package is too long":
-        return PrinterStatus.PRINTER_IS_BUSY;
+        return PrinterStatus.DATA_PACKAGE_TO_LONG;
       default:
         return PrinterStatus.UNKNOWN;
     }
