@@ -1,5 +1,5 @@
 name: flutter_pax_printer_utility_example
-description: Demonstrates how to use the flutter_pax_printer_utility plugin.
+description: This package based on PAX Device with NetptuneLiteApi SDK and allows printing on PAX devices via Flutter apps on Android.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
