@@ -67,6 +67,7 @@ buildTypes {
 
 ```bash
 PAX A920 
+PAX A910S
 ```
 
 ## Buy me a coffe
