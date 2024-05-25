@@ -36,3 +36,9 @@
 * (update) Change getStatus response from string to enum PrinterStatus
 * (fix) Print Bitmap Function
 * (update) Add example Print Bitmap Receipt
+
+## 0.1.4
+
+* (fix) Implemented various printer statuses correctly
+* (update) Added better API documentation
+* (update) Changed package description 
