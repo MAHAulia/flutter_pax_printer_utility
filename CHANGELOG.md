@@ -42,3 +42,9 @@
 * (fix) Implemented various printer statuses correctly
 * (update) Added better API documentation
 * (update) Changed package description 
+
+## 0.1.5
+
+* Updated code to match Dart formatter.
+* Updated example app code to remove problems found by dart analyze
+* Updated README doc

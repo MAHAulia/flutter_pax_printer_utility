@@ -5,7 +5,8 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class FlutterPaxPrinterUtility {
-  static const MethodChannel _channel = MethodChannel('flutter_pax_printer_utility');
+  static const MethodChannel _channel =
+      MethodChannel('flutter_pax_printer_utility');
 
   static Future<String?> get platformVersion async {
     final String? version = await _channel.invokeMethod('getPlatformVersion');
@@ -51,7 +52,8 @@ class FlutterPaxPrinterUtility {
   ///
   /// Returns a [Future] that completes with the printer's response as a [String].
   static Future<String?> printReceipt(String text) async {
-    final String? response = await _channel.invokeMethod('printReceipt', {"text": text.replaceAll("\r", "")});
+    final String? response = await _channel
+        .invokeMethod('printReceipt', {"text": text.replaceAll("\r", "")});
     return response;
   }
 
@@ -60,9 +62,10 @@ class FlutterPaxPrinterUtility {
   /// This method sends the specified [text] and [qrString] to the printer to be printed as a receipt with a QR code.
   ///
   /// Returns a [Future] that completes with the printer's response as a [String].
-  static Future<String?> printReceiptWithQr(String text, String qrString) async {
-    final String? response =
-        await _channel.invokeMethod('printReceipt', {"text": text.replaceAll("\r", ""), "qr_string": qrString});
+  static Future<String?> printReceiptWithQr(
+      String text, String qrString) async {
+    final String? response = await _channel.invokeMethod('printReceipt',
+        {"text": text.replaceAll("\r", ""), "qr_string": qrString});
     return response;
   }
 
@@ -71,7 +74,8 @@ class FlutterPaxPrinterUtility {
   /// This method sends the specified texts and [qrString] to the printer to be printed as a receipt with a QR code.
   ///
   /// Returns a [Future] that completes with the printer's response as a [String].
-  static Future<String?> printQRReceipt(String text1, String text2, String text3, String text4, String qrString) async {
+  static Future<String?> printQRReceipt(String text1, String text2,
+      String text3, String text4, String qrString) async {
     Map<String, dynamic> arguments = {
       "text1": text1.replaceAll("\r", ""),
       "text2": text2.replaceAll("\r", ""),
@@ -98,7 +102,8 @@ class FlutterPaxPrinterUtility {
   /// This method sets the specified [asciiFontType] and [cFontType] for the printer.
   ///
   /// Returns a [Future] that completes with a boolean indicating the success of the operation.
-  static Future<bool?> fontSet(EFontTypeAscii asciiFontType, EFontTypeExtCode cFontType) async {
+  static Future<bool?> fontSet(
+      EFontTypeAscii asciiFontType, EFontTypeExtCode cFontType) async {
     Map<String, dynamic> arguments = {
       "asciiFontType": asciiFontType.toString(),
       "cFontType": cFontType.toString(),
@@ -157,7 +162,8 @@ class FlutterPaxPrinterUtility {
     Map<String, dynamic> arguments = {
       "bitmap": bitmap,
     };
-    final bool? response = await _channel.invokeMethod('printBitmap', arguments);
+    final bool? response =
+        await _channel.invokeMethod('printBitmap', arguments);
     return response;
   }
 
@@ -170,7 +176,8 @@ class FlutterPaxPrinterUtility {
     Map<String, dynamic> arguments = {
       "url": url,
     };
-    final bool? response = await _channel.invokeMethod('printImageUrl', arguments);
+    final bool? response =
+        await _channel.invokeMethod('printImageUrl', arguments);
     return response;
   }
 
@@ -184,7 +191,8 @@ class FlutterPaxPrinterUtility {
     Map<String, dynamic> arguments = {
       "bitmap": byte,
     };
-    final bool? response = await _channel.invokeMethod('printImageAsset', arguments);
+    final bool? response =
+        await _channel.invokeMethod('printImageAsset', arguments);
     return response;
   }
 
@@ -204,7 +212,8 @@ class FlutterPaxPrinterUtility {
   /// Returns a [Future] that completes with the file bytes as a [Uint8List].
   Future<Uint8List> readFileBytes(String path) async {
     ByteData fileData = await rootBundle.load(path);
-    Uint8List fileUnit8List = fileData.buffer.asUint8List(fileData.offsetInBytes, fileData.lengthInBytes);
+    Uint8List fileUnit8List = fileData.buffer
+        .asUint8List(fileData.offsetInBytes, fileData.lengthInBytes);
     return fileUnit8List;
   }
 
@@ -219,7 +228,8 @@ class FlutterPaxPrinterUtility {
       "width": width,
       "height": height,
     };
-    final bool? response = await _channel.invokeMethod('printQRCode', arguments);
+    final bool? response =
+        await _channel.invokeMethod('printQRCode', arguments);
     return response;
   }
 
@@ -232,7 +242,8 @@ class FlutterPaxPrinterUtility {
     Map<String, dynamic> arguments = {
       "indent": indent,
     };
-    final bool? response = await _channel.invokeMethod('leftIndents', arguments);
+    final bool? response =
+        await _channel.invokeMethod('leftIndents', arguments);
     return response;
   }
 
@@ -269,12 +280,14 @@ class FlutterPaxPrinterUtility {
   /// This method sets the double width mode of the printer based on the specified [isAscDouble] and [isLocalDouble] values.
   ///
   /// Returns a [Future] that completes with a boolean indicating the success of the operation.
-  static Future<bool?> setDoubleWidth(bool isAscDouble, bool isLocalDouble) async {
+  static Future<bool?> setDoubleWidth(
+      bool isAscDouble, bool isLocalDouble) async {
     Map<String, dynamic> arguments = {
       "isAscDouble": isAscDouble,
       "isLocalDouble": isLocalDouble,
     };
-    final bool? response = await _channel.invokeMethod('setDoubleWidth', arguments);
+    final bool? response =
+        await _channel.invokeMethod('setDoubleWidth', arguments);
     return response;
   }
 
@@ -283,12 +296,14 @@ class FlutterPaxPrinterUtility {
   /// This method sets the double height mode of the printer based on the specified [isAscDouble] and [isLocalDouble] values.
   ///
   /// Returns a [Future] that completes with a boolean indicating the success of the operation.
-  static Future<bool?> setDoubleHeight(bool isAscDouble, bool isLocalDouble) async {
+  static Future<bool?> setDoubleHeight(
+      bool isAscDouble, bool isLocalDouble) async {
     Map<String, dynamic> arguments = {
       "isAscDouble": isAscDouble,
       "isLocalDouble": isLocalDouble,
     };
-    final bool? response = await _channel.invokeMethod('setDoubleHeight', arguments);
+    final bool? response =
+        await _channel.invokeMethod('setDoubleHeight', arguments);
     return response;
   }
 
