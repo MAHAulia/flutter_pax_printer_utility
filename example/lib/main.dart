@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
@@ -71,7 +72,9 @@ class _HomePageState extends State<HomePage> {
   getPrinterStatus() async {
     await FlutterPaxPrinterUtility.init;
     PrinterStatus status = await FlutterPaxPrinterUtility.getStatus;
-    print(status);
+    if (kDebugMode) {
+      print(status);
+    }
     setState(() {
       if (status == PrinterStatus.SUCCESS) {
         statusPrinter = "1";
@@ -354,24 +357,24 @@ class _ReceiptPageState extends State<ReceiptPage> {
                   const Text("MID             : 0812393"),
                   const Text("REFF           : 1023701923701"),
                   const SizedBox(height: 20.0),
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text("Amount"),
                       Text("100.000"),
                     ],
                   ),
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text("Tip"),
                       Text("0"),
                     ],
                   ),
                   const Divider(),
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text("TOTAL"),
                       Text("100.000"),
                     ],
