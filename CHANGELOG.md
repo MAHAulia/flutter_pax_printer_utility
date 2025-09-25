@@ -48,3 +48,9 @@
 * Updated code to match Dart formatter.
 * Updated example app code to remove problems found by dart analyze
 * Updated README doc
+
+## 0.1.6
+
+* (update) Updated NeptuneLight to newer version
+* (fix) Fixed issues on Android 12 and 64 bit devices
+* (update) Updated README doc
