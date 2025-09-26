@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.4'
+        classpath 'com.android.tools.build:gradle:7.3.1'
     }
 }
 
@@ -23,11 +23,15 @@ apply plugin: 'com.android.library'
 
 android {
 
+    lintOptions {
+        checkReleaseBuilds false
+    }
+
     if (project.android.hasProperty("namespace")) {
         namespace("com.mahatech.flutter_pax_printer_utility")
     }
 
-    compileSdkVersion 30
+    compileSdkVersion 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -35,11 +39,11 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 19
     }
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.google.zxing:core:3.1.0'
+    implementation files('libs/NeptuneLiteApi_V4.09.00_20240909.jar')
+    implementation 'com.google.zxing:core:3.5.0'
 }
