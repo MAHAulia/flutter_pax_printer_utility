@@ -1,22 +1,31 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.mahatech.flutter_pax_printer_utility">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.mahatech.flutter_pax_printer_utility">
 
-    <uses-permission android:name="com.pax.permission.ICC"/>
-    <uses-permission android:name="com.pax.permission.PICC"/>
-    <uses-permission android:name="com.pax.permission.MAGCARD"/>
-    <uses-permission android:name="com.pax.permission.PRINTER"/>
-    <uses-permission android:name="com.pax.permission.PED"/>
+  <!-- PAX-specific permissions -->
+  <uses-permission android:name="com.pax.permission.ICC"/>
+  <uses-permission android:name="com.pax.permission.PICC"/>
+  <uses-permission android:name="com.pax.permission.MAGCARD"/>
+  <uses-permission android:name="com.pax.permission.PRINTER"/>
+  <uses-permission android:name="com.pax.permission.PED"/>
 
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+  <!-- Common permissions -->
+  <uses-permission android:name="android.permission.CAMERA"/>
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+  <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+  <!-- Bluetooth (Android 12+) -->
+  <uses-permission android:name="android.permission.BLUETOOTH"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" android:usesPermissionFlags="neverForLocation"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
+
+  <!-- Storage (deprecated, consider scoped storage) -->
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"/>
+  <!-- won’t work on API 30+ -->
 
 </manifest>
