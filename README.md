@@ -44,13 +44,39 @@ buildTypes {
 - [✅] Print Image From Asset => use printImageAsset
 - [✅] Set Left Indents => use leftIndents
 - [✅] Get the terminal's serial number => use `PaxDeviceInfo.getSerial()` (import `package:flutter_pax_printer_utility/pax_device_info.dart`)
-- [ ] Draw a divisor line
-- [ ] Print all types of Barcodes (see enum below)
-- [ ] Print rows like recepit with custom width and alignment
-- [ ] Able to combine with some esc/pos code that you already have!
-- [ ] Printer serial no - Get the serial number of the printer
-- [ ] Printer version - Get the printer's version
-- [ ] Printer paper size - Get the paper size ( 0: 80mm 1: 58mm)
+- [✅] Draw a divider line => use printDivider (solid or dashed)
+- [✅] Print barcodes => use printBarcode with a `PaxBarcodeFormat` (see [Barcodes](#barcodes))
+- [✅] Print rows like a receipt with custom width and alignment => use printRow (see [Rows](#rows))
+- [✅] Get the terminal's model and firmware versions => use `PaxDeviceInfo.getTermInfo()`. The PAX SDK has no separate serial number or version for the built-in printer, so these are the terminal's.
+- [✅] Get the paper size => use getPaperSize (`PaxPaperSize.MM_58` / `MM_80`). Terminals that don't support it return `UNKNOWN`; the A910S is one of them.
+- [ ] Combine with ESC/POS code you already have. Not possible: the PAX SDK has no way to send raw ESC/POS bytes to the printer.
+
+## Barcodes
+Barcodes are encoded on the device and added to the print job as an image:
+
+```dart
+await FlutterPaxPrinterUtility.printBarcode('600123456789', PaxBarcodeFormat.EAN_13);
+await FlutterPaxPrinterUtility.printBarcode('TFN-000123', PaxBarcodeFormat.CODE_128, height: 80);
+await FlutterPaxPrinterUtility.start();
+```
+
+Supported formats: `CODE_128`, `CODE_39`, `CODE_93`, `CODABAR`, `EAN_8`, `EAN_13`, `UPC_A`, `UPC_E`, `ITF`, `QR_CODE`, `PDF_417`, `DATA_MATRIX`, `AZTEC`.
+Data that isn't valid for the format (for example letters in an EAN-13) throws a `PlatformException` with code `INVALID_BARCODE`; a barcode wider than the paper throws `BARCODE_TOO_WIDE`.
+
+## Rows
+`printRow` lays out columns in the current font, wrapping long text within its column:
+
+```dart
+final width = FlutterPaxPrinterUtility.charsPerLine(EFontTypeAscii.FONT_12_24); // 32 on 58mm paper
+await FlutterPaxPrinterUtility.printRow([
+  const PrintColumn('2', width: 4),
+  const PrintColumn('Coffee'),
+  const PrintColumn('R 50.00', width: 10, align: PrintAlign.RIGHT),
+], charsPerLine: width);
+await FlutterPaxPrinterUtility.printDivider(dashed: true);
+```
+
+Columns with a `width` get exactly that many characters; the others share the rest by `flex`. `formatRow` returns the laid-out text without printing it.
 
 ## Other Functions
 - Template Print Receipt With QR => printReceiptWithQr

@@ -233,6 +233,184 @@ class FlutterPaxPrinterUtility {
     return response;
   }
 
+  /// Prints a barcode of [data] in the given [format].
+  ///
+  /// The barcode is encoded on the device (zxing) and printed as a bitmap, so it
+  /// is added to the current print job like any other line; call [start] to print.
+  ///
+  /// [width] and [height] are minimums in printer dots: zxing makes the barcode
+  /// larger when the data needs more room. [height] defaults to 100 for 1D
+  /// formats and to [width] for square 2D formats (QR, Data Matrix, Aztec).
+  /// [paperSize] sets the widest barcode allowed (384 dots on 58mm paper).
+  ///
+  /// Returns `true` if the barcode was added to the job. Throws a
+  /// [PlatformException] with code `INVALID_BARCODE` if [data] is not valid for
+  /// [format] (for example letters in an EAN-13), or `BARCODE_TOO_WIDE` if the
+  /// encoded barcode is wider than the paper.
+  static Future<bool?> printBarcode(String data, PaxBarcodeFormat format,
+      {int? width,
+      int? height,
+      PaxPaperSize paperSize = PaxPaperSize.MM_58}) async {
+    final int w = width ?? (format.isSquare ? 256 : paperSize.dots);
+    final int h = height ?? (format.isSquare ? w : (format.is2D ? 150 : 100));
+    final bool? response = await _channel.invokeMethod('printBarcode', {
+      "data": data,
+      "format": format.name,
+      "width": w,
+      "height": h,
+      "maxWidth": paperSize.dots,
+    });
+    return response;
+  }
+
+  /// Prints a horizontal divider line across the paper.
+  ///
+  /// [thickness] is in printer dots. Set [dashed] for a dashed line. The line
+  /// is as wide as [paperSize] (384 dots on 58mm paper).
+  ///
+  /// Returns `true` if the line was added to the current print job.
+  static Future<bool?> printDivider(
+      {int thickness = 2,
+      bool dashed = false,
+      PaxPaperSize paperSize = PaxPaperSize.MM_58}) async {
+    final bool? response = await _channel.invokeMethod('printDivider', {
+      "width": paperSize.dots,
+      "thickness": thickness,
+      "dashed": dashed,
+    });
+    return response;
+  }
+
+  /// Prints one row of [columns], like a receipt line ("Item ...... 10.00").
+  ///
+  /// The row is laid out by [formatRow] and printed with [printStr], so the
+  /// current font applies. [charsPerLine] must match the font and paper; use
+  /// [FlutterPaxPrinterUtility.charsPerLine] to work it out (32 for
+  /// `FONT_12_24` on 58mm paper).
+  static Future<bool?> printRow(List<PrintColumn> columns,
+      {int charsPerLine = 32, String? charset}) async {
+    return printStr(
+        '${formatRow(columns, charsPerLine: charsPerLine)}\n', charset);
+  }
+
+  /// Lays out [columns] as fixed-width text, [charsPerLine] characters wide.
+  ///
+  /// Columns with a [PrintColumn.width] get exactly that many characters; the
+  /// rest share the remaining space by [PrintColumn.flex]. Text that does not
+  /// fit wraps onto extra lines within its column, breaking at spaces where
+  /// possible. Lines are separated by `\n` with no trailing newline.
+  ///
+  /// Throws an [ArgumentError] if the fixed widths do not fit in
+  /// [charsPerLine] or a column would end up narrower than one character.
+  static String formatRow(List<PrintColumn> columns, {int charsPerLine = 32}) {
+    if (columns.isEmpty) {
+      throw ArgumentError.value(columns, 'columns', 'must not be empty');
+    }
+    final int fixed = columns.fold(0, (sum, c) => sum + (c.width ?? 0));
+    final int flexTotal =
+        columns.fold(0, (sum, c) => sum + (c.width == null ? c.flex : 0));
+    final int remaining = charsPerLine - fixed;
+    if (remaining < 0) {
+      throw ArgumentError(
+          'Column widths ($fixed) exceed charsPerLine ($charsPerLine)');
+    }
+
+    // Share the remaining characters between flex columns; the last flex
+    // column takes whatever rounding leaves over.
+    final widths = <int>[];
+    int flexLeft = remaining;
+    final int lastFlex = columns.lastIndexWhere((c) => c.width == null);
+    for (int i = 0; i < columns.length; i++) {
+      final c = columns[i];
+      if (c.width != null) {
+        widths.add(c.width!);
+      } else if (i == lastFlex) {
+        widths.add(flexLeft);
+      } else {
+        final int w = remaining * c.flex ~/ flexTotal;
+        widths.add(w);
+        flexLeft -= w;
+      }
+    }
+    for (int i = 0; i < widths.length; i++) {
+      if (widths[i] < 1) {
+        throw ArgumentError('Column $i would be ${widths[i]} characters wide; '
+            'widen charsPerLine or reduce the other columns');
+      }
+    }
+
+    final cells = <List<String>>[
+      for (int i = 0; i < columns.length; i++) _wrap(columns[i].text, widths[i])
+    ];
+    final int lineCount = cells.fold(0, (m, c) => c.length > m ? c.length : m);
+    final lines = <String>[];
+    for (int line = 0; line < lineCount; line++) {
+      final buffer = StringBuffer();
+      for (int i = 0; i < columns.length; i++) {
+        final String text = line < cells[i].length ? cells[i][line] : '';
+        buffer.write(_align(text, widths[i], columns[i].align));
+      }
+      lines.add(buffer.toString());
+    }
+    return lines.join('\n');
+  }
+
+  /// How many characters of [font] fit on one line of [paperSize] paper.
+  ///
+  /// For example 32 for `FONT_12_24` and 48 for `FONT_8_16` on 58mm paper.
+  /// Halve it while double width is on ([setDoubleWidth]).
+  static int charsPerLine(EFontTypeAscii font,
+      {PaxPaperSize paperSize = PaxPaperSize.MM_58}) {
+    final int fontWidth = int.parse(font.toString().split('_')[1]);
+    return paperSize.dots ~/ fontWidth;
+  }
+
+  /// Gets the paper size the printer is set up for.
+  ///
+  /// Returns [PaxPaperSize.UNKNOWN] if the terminal cannot report it.
+  static Future<PaxPaperSize> get getPaperSize async {
+    final int? size = await _channel.invokeMethod('getPrinterSize');
+    switch (size) {
+      case 0:
+        return PaxPaperSize.MM_80;
+      case 1:
+        return PaxPaperSize.MM_58;
+      default:
+        return PaxPaperSize.UNKNOWN;
+    }
+  }
+
+  static List<String> _wrap(String text, int width) {
+    final lines = <String>[];
+    for (final paragraph in text.replaceAll('\r', '').split('\n')) {
+      String rest = paragraph;
+      if (rest.isEmpty) {
+        lines.add('');
+        continue;
+      }
+      while (rest.length > width) {
+        int cut = rest.lastIndexOf(' ', width);
+        if (cut <= 0) cut = width;
+        lines.add(rest.substring(0, cut).trimRight());
+        rest = rest.substring(cut).trimLeft();
+      }
+      if (rest.isNotEmpty || lines.isEmpty) lines.add(rest);
+    }
+    return lines;
+  }
+
+  static String _align(String text, int width, PrintAlign align) {
+    switch (align) {
+      case PrintAlign.LEFT:
+        return text.padRight(width);
+      case PrintAlign.RIGHT:
+        return text.padLeft(width);
+      case PrintAlign.CENTER:
+        final int left = (width - text.length) ~/ 2;
+        return (' ' * left + text).padRight(width);
+    }
+  }
+
   /// Sets the left indentation for printing.
   ///
   /// This method sets the left indentation of the printer to the specified [indent] value.
@@ -332,6 +510,94 @@ class FlutterPaxPrinterUtility {
     final bool? response = await _channel.invokeMethod('cutPaper', arguments);
     return response;
   }
+}
+
+/// Paper widths supported by PAX printers.
+enum PaxPaperSize {
+  /// 58mm paper, 384 printer dots wide.
+  MM_58(384),
+
+  /// 80mm paper, 576 printer dots wide.
+  MM_80(576),
+
+  /// The terminal did not report a paper size; treated as 58mm.
+  UNKNOWN(384);
+
+  const PaxPaperSize(this.dots);
+
+  /// Printable width in dots.
+  final int dots;
+}
+
+/// Barcode formats [FlutterPaxPrinterUtility.printBarcode] can print.
+enum PaxBarcodeFormat {
+  /// Code 128: any ASCII text. The usual choice for general data.
+  CODE_128,
+
+  /// Code 39: digits, upper-case letters and `-. $/+%`.
+  CODE_39,
+
+  /// Code 93: like Code 39, more compact.
+  CODE_93,
+
+  /// Codabar: digits and `-$:/.+`, starting and ending with A-D.
+  CODABAR,
+
+  /// EAN-8: 7 digits (check digit added) or 8 digits.
+  EAN_8,
+
+  /// EAN-13: 12 digits (check digit added) or 13 digits.
+  EAN_13,
+
+  /// UPC-A: 11 digits (check digit added) or 12 digits.
+  UPC_A,
+
+  /// UPC-E: 7 or 8 digits starting with 0 or 1.
+  UPC_E,
+
+  /// Interleaved 2 of 5: an even number of digits.
+  ITF,
+
+  /// QR code (2D).
+  QR_CODE,
+
+  /// PDF417 (stacked 2D).
+  PDF_417,
+
+  /// Data Matrix (2D).
+  DATA_MATRIX,
+
+  /// Aztec (2D).
+  AZTEC;
+
+  /// Whether this is a 2D format.
+  bool get is2D => index >= QR_CODE.index;
+
+  /// Whether this format is square (QR, Data Matrix, Aztec).
+  bool get isSquare => this == QR_CODE || this == DATA_MATRIX || this == AZTEC;
+}
+
+/// Text alignment within a [PrintColumn].
+enum PrintAlign { LEFT, CENTER, RIGHT }
+
+/// One column of a row printed with [FlutterPaxPrinterUtility.printRow].
+class PrintColumn {
+  /// The text to print. Long text wraps within the column.
+  final String text;
+
+  /// Fixed width in characters. Leave null to share the free space by [flex].
+  final int? width;
+
+  /// Share of the free space when [width] is null.
+  final int flex;
+
+  /// How the text is aligned within the column.
+  final PrintAlign align;
+
+  const PrintColumn(this.text,
+      {this.width, this.flex = 1, this.align = PrintAlign.LEFT})
+      : assert(width == null || width > 0),
+        assert(flex > 0);
 }
 
 enum PrinterStatus {
