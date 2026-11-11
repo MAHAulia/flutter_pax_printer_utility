@@ -4,6 +4,8 @@ import static java.lang.Byte.parseByte;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Printer;
 
 import androidx.annotation.NonNull;
@@ -176,15 +178,25 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       result.success(true);
     } else if (call.method.equals("printImageUrl")) {
       String url = call.argument("url");
+      // Download off the main thread, but reply on it: Flutter requires
+      // MethodChannel results to be sent from the platform thread.
+      final Handler mainHandler = new Handler(Looper.getMainLooper());
       Thread thread = new Thread(new Runnable() {
         @Override
         public void run() {
-          try  {
-            printerUtility.printBitmap(qrcodeUtility.getBitmapFromURL(url));
-            result.success(true);
+          boolean printed = false;
+          try {
+            printed = printerUtility.printBitmap(qrcodeUtility.getBitmapFromURL(url));
           } catch (Exception e) {
             e.printStackTrace();
           }
+          final boolean reply = printed;
+          mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              result.success(reply);
+            }
+          });
         }
       });
 

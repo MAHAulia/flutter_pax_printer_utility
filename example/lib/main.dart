@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
     await FlutterPaxPrinterUtility.setGray(1);
     await FlutterPaxPrinterUtility.printStr('TEST PRINT IMAGE NETWORK', null);
     await FlutterPaxPrinterUtility.printImageUrl(
-        "http://pudim.com.br/pudim.jpg");
+        "https://pudim.com.br/pudim.jpg");
     await FlutterPaxPrinterUtility.step(150);
     var status = await FlutterPaxPrinterUtility.start();
     return status;

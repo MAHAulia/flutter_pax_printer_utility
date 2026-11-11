@@ -105,13 +105,19 @@ public class PrinterUtility {
         }
     }
 
-    public void printBitmap(Bitmap bitmap) {
+    public boolean printBitmap(Bitmap bitmap) {
+        if (bitmap == null) {
+            Log.e("BITMAP", "No bitmap to print (image could not be loaded or decoded)");
+            return false;
+        }
         try {
             printer.printBitmap(bitmap);
             Log.i("BITMAP",  "PRINT BITMAP");
+            return true;
         } catch (PrinterDevException e) {
             e.printStackTrace();
             Log.e("BITMAP", String.valueOf(e));
+            return false;
         }
     }
 
