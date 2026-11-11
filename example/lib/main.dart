@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter_pax_printer_utility/flutter_pax_printer_utility.dart';
+import 'package:flutter_pax_printer_utility/pax_device_info.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -37,6 +38,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _platformVersion = 'Unknown';
+  String _serialNumber = 'Unknown';
   String statusPrinter = '0';
   bool isLoading = false;
 
@@ -45,6 +47,18 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     initPlatformState();
     getPrinterStatus();
+    getSerialNumber();
+  }
+
+  Future<void> getSerialNumber() async {
+    String serialNumber;
+    try {
+      serialNumber = await PaxDeviceInfo.getSerial() ?? 'Unknown';
+    } on PlatformException catch (e) {
+      serialNumber = 'Failed to get serial number: ${e.message}';
+    }
+    if (!mounted) return;
+    setState(() => _serialNumber = serialNumber);
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -211,6 +225,10 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text(
               'Running on: $_platformVersion\n',
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              'Serial Number: $_serialNumber',
               textAlign: TextAlign.center,
             ),
             statusPrinter == '1'

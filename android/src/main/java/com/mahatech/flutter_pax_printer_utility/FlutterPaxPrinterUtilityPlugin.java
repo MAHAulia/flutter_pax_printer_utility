@@ -10,8 +10,13 @@ import android.util.Printer;
 
 import androidx.annotation.NonNull;
 
+import com.pax.dal.IDAL;
+import com.pax.dal.entity.BaseInfo;
 import com.pax.dal.entity.EFontTypeAscii;
 import com.pax.dal.entity.EFontTypeExtCode;
+import com.pax.dal.entity.ETermInfoKey;
+
+import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -26,6 +31,8 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
+  /// Separate channel for terminal information, used by PaxDeviceInfo in Dart.
+  private MethodChannel deviceInfoChannel;
   private static PrinterUtility printerUtility;
   private static QRCodeUtil qrcodeUtility;
 
@@ -36,6 +43,54 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
     printerUtility =
             new PrinterUtility(flutterPluginBinding.getApplicationContext());
             qrcodeUtility = new QRCodeUtil();
+
+    deviceInfoChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "pax_device_info");
+    deviceInfoChannel.setMethodCallHandler((call, result) -> {
+      if (call.method.equals("getSerialNumber")) {
+        getSerialNumber(result);
+      } else {
+        result.notImplemented();
+      }
+    });
+  }
+
+  /// Replies with the terminal's serial number: ETermInfoKey.SN from the
+  /// terminal info, falling back to BaseInfo.getSn().
+  private void getSerialNumber(@NonNull Result result) {
+    try {
+      IDAL dal = printerUtility.getDal();
+      if (dal == null) {
+        result.error("PAX_ERROR", "Failed to get DAL instance", null);
+        return;
+      }
+
+      try {
+        Map<ETermInfoKey, String> termInfo = dal.getSys().getTermInfo();
+        if (termInfo != null) {
+          String serialNumber = termInfo.get(ETermInfoKey.SN);
+          if (serialNumber != null && !serialNumber.isEmpty()) {
+            result.success(serialNumber);
+            return;
+          }
+        }
+      } catch (Exception e) {
+        // getTermInfo is not supported on every terminal; fall back to getBaseInfo.
+      }
+
+      BaseInfo baseInfo = dal.getSys().getBaseInfo();
+      if (baseInfo == null) {
+        result.error("PAX_ERROR", "Failed to get base info from device", null);
+        return;
+      }
+      String serialNumber = baseInfo.getSn();
+      if (serialNumber == null || serialNumber.isEmpty()) {
+        result.error("PAX_ERROR", "Device serial number is empty", null);
+        return;
+      }
+      result.success(serialNumber);
+    } catch (Exception e) {
+      result.error("PAX_ERROR", e.getMessage(), null);
+    }
   }
 
   @Override
@@ -252,5 +307,6 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
+    deviceInfoChannel.setMethodCallHandler(null);
   }
 }

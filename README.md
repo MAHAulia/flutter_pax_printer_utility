@@ -43,6 +43,7 @@ buildTypes {
 - [✅] Print Bitmap => use printBitmap
 - [✅] Print Image From Asset => use printImageAsset
 - [✅] Set Left Indents => use leftIndents
+- [✅] Get the terminal's serial number => use `PaxDeviceInfo.getSerial()` (import `package:flutter_pax_printer_utility/pax_device_info.dart`)
 - [ ] Draw a divisor line
 - [ ] Print all types of Barcodes (see enum below)
 - [ ] Print rows like recepit with custom width and alignment
