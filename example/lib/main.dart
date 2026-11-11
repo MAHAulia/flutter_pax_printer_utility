@@ -115,7 +115,7 @@ class _HomePageState extends State<HomePage> {
     await FlutterPaxPrinterUtility.step(30);
 
     const samples = {
-      PaxBarcodeFormat.CODE_128: 'TFN-000123',
+      PaxBarcodeFormat.CODE_128: 'ABC-000123',
       PaxBarcodeFormat.CODE_39: 'PAX-A910S',
       PaxBarcodeFormat.CODE_93: 'CODE93',
       PaxBarcodeFormat.CODABAR: 'A123456B',

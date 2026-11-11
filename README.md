@@ -56,7 +56,7 @@ Barcodes are encoded on the device and added to the print job as an image:
 
 ```dart
 await FlutterPaxPrinterUtility.printBarcode('600123456789', PaxBarcodeFormat.EAN_13);
-await FlutterPaxPrinterUtility.printBarcode('TFN-000123', PaxBarcodeFormat.CODE_128, height: 80);
+await FlutterPaxPrinterUtility.printBarcode('ABC-000123', PaxBarcodeFormat.CODE_128, height: 80);
 await FlutterPaxPrinterUtility.start();
 ```
 

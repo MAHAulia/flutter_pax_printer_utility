@@ -55,9 +55,9 @@
 * (fix) Fixed issues on Android 12 and 64 bit devices
 * (update) Updated README doc
 
-## Unreleased
+## 0.1.7
 
-* (update) Added `PaxDeviceInfo.getSerial()` to read the terminal's serial number (ported from the Transport POS copy of this plugin)
+* (update) Added `PaxDeviceInfo.getSerial()` to read the terminal's serial number
 * (update) Added `printBarcode` with `PaxBarcodeFormat` (Code 128/39/93, Codabar, EAN-8/13, UPC-A/E, ITF, QR, PDF417, Data Matrix, Aztec)
 * (update) Added `printDivider` for solid or dashed divider lines
 * (update) Added `printRow`, `formatRow`, `PrintColumn` and `charsPerLine` for receipt-style rows with column widths and alignment
