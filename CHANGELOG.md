@@ -54,3 +54,9 @@
 * (update) Updated NeptuneLight to newer version
 * (fix) Fixed issues on Android 12 and 64 bit devices
 * (update) Updated README doc
+
+## Unreleased
+
+* (update) Added `PaxDeviceInfo.getSerial()` to read the terminal's serial number (ported from the Transport POS copy of this plugin)
+* (fix) `printImageUrl` replies on the main thread and returns whether the image printed
+* (fix) `printBitmap` skips a missing image instead of passing it to the printer

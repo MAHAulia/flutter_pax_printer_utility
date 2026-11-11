@@ -47,17 +47,24 @@ public class QRCodeUtil {
     }
 
     public static Bitmap getBitmapFromURL(String src) {
+        HttpURLConnection connection = null;
         try {
            URL url = new URL(src);
-           HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+           connection = (HttpURLConnection) url.openConnection();
+           connection.setConnectTimeout(15000);
+           connection.setReadTimeout(15000);
            connection.setDoInput(true);
            connection.connect();
-           InputStream input = connection.getInputStream();
-           Bitmap myBitmap = BitmapFactory.decodeStream(input);
-           return myBitmap;
+           try (InputStream input = connection.getInputStream()) {
+               return BitmapFactory.decodeStream(input);
+           }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
 
