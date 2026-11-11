@@ -13,7 +13,7 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  getPrinterStatus() async {
+  Future<void> getPrinterStatus() async {
     await FlutterPaxPrinterUtility.init;
     PrinterStatus status = await FlutterPaxPrinterUtility.getStatus;
     if (kDebugMode) {
@@ -84,7 +84,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  printQrCode() async {
+  Future<String?> printQrCode() async {
     await FlutterPaxPrinterUtility.init;
     await FlutterPaxPrinterUtility.fontSet(
         EFontTypeAscii.FONT_24_24, EFontTypeExtCode.FONT_24_24);
@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
     return status;
   }
 
-  printImage() async {
+  Future<String?> printImage() async {
     await FlutterPaxPrinterUtility.init;
     await FlutterPaxPrinterUtility.fontSet(
         EFontTypeAscii.FONT_24_24, EFontTypeExtCode.FONT_24_24);
@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage> {
     return status;
   }
 
-  printImageNetwork() async {
+  Future<String?> printImageNetwork() async {
     await FlutterPaxPrinterUtility.init;
     await FlutterPaxPrinterUtility.fontSet(
         EFontTypeAscii.FONT_24_24, EFontTypeExtCode.FONT_24_24);
@@ -260,7 +260,7 @@ class _HomePageState extends State<HomePage> {
 
 /// Example Page For Receipt Page
 class ReceiptPage extends StatefulWidget {
-  const ReceiptPage({Key? key}) : super(key: key);
+  const ReceiptPage({super.key});
 
   @override
   State<ReceiptPage> createState() => _ReceiptPageState();
@@ -280,6 +280,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
       var pngBytes = byteData!.buffer.asUint8List();
       return pngBytes;
     } catch (e) {
+      if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(e.toString()),
         backgroundColor: Colors.red,
@@ -402,7 +403,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                   decoration:
-                      BoxDecoration(color: Colors.grey.withOpacity(0.5)),
+                      BoxDecoration(color: Colors.grey.withValues(alpha: 0.5)),
                   child: const Center(
                     child: CircularProgressIndicator(),
                   ),
