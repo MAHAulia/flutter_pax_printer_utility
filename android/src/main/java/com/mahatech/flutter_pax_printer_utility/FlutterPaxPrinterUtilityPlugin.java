@@ -159,36 +159,8 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       String asciiFontTypeString = call.argument("asciiFontType");
       String cFontTypeString = call.argument("cFontType");
 
-      EFontTypeAscii asciiFontType;
+      EFontTypeAscii asciiFontType = asciiFontTypeFromName(asciiFontTypeString);
       EFontTypeExtCode cFontType;
-
-      if (asciiFontTypeString.equals("FONT_8_16")) {
-        asciiFontType = EFontTypeAscii.FONT_8_16;
-      } else if (asciiFontTypeString.equals("FONT_16_24")) {
-        asciiFontType = EFontTypeAscii.FONT_16_24;
-      }else if (asciiFontTypeString.equals("FONT_12_24")) {
-        asciiFontType = EFontTypeAscii.FONT_12_24;
-      }else if (asciiFontTypeString.equals("FONT_8_32")) {
-        asciiFontType = EFontTypeAscii.FONT_8_32;
-      }else if (asciiFontTypeString.equals("FONT_16_48")) {
-        asciiFontType = EFontTypeAscii.FONT_16_48;
-      }else if (asciiFontTypeString.equals("FONT_12_48")) {
-        asciiFontType = EFontTypeAscii.FONT_12_48;
-      }else if (asciiFontTypeString.equals("FONT_16_16")) {
-        asciiFontType = EFontTypeAscii.FONT_16_16;
-      }else if (asciiFontTypeString.equals("FONT_32_24")) {
-        asciiFontType = EFontTypeAscii.FONT_32_24;
-      }else if (asciiFontTypeString.equals("FONT_24_24")) {
-        asciiFontType = EFontTypeAscii.FONT_24_24;
-      }else if (asciiFontTypeString.equals("FONT_16_32")) {
-        asciiFontType = EFontTypeAscii.FONT_16_32;
-      }else if (asciiFontTypeString.equals("FONT_32_48")) {
-        asciiFontType = EFontTypeAscii.FONT_32_48;
-      }else if (asciiFontTypeString.equals("FONT_24_48")) {
-        asciiFontType = EFontTypeAscii.FONT_24_48;
-      } else {
-        asciiFontType = EFontTypeAscii.FONT_8_16;
-      }
 
       if (cFontTypeString.equals("FONT_16_16")) {
         cFontType = EFontTypeExtCode.FONT_16_16;
@@ -301,6 +273,43 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       result.success(true);
     } else {
       result.notImplemented();
+    }
+  }
+
+  /// Maps a Dart EFontTypeAscii name to the PAX SDK constant, defaulting to FONT_8_16.
+  ///
+  /// The PAX SDK marks FONT_16_24, FONT_16_48, FONT_32_24 and FONT_32_48 as deprecated
+  /// without naming a replacement. They still print on current terminals and are part
+  /// of this plugin's public Dart API, so they stay supported; the warning is suppressed
+  /// here only.
+  @SuppressWarnings("deprecation")
+  private static EFontTypeAscii asciiFontTypeFromName(String name) {
+    if (name.equals("FONT_8_16")) {
+      return EFontTypeAscii.FONT_8_16;
+    } else if (name.equals("FONT_16_24")) {
+      return EFontTypeAscii.FONT_16_24;
+    } else if (name.equals("FONT_12_24")) {
+      return EFontTypeAscii.FONT_12_24;
+    } else if (name.equals("FONT_8_32")) {
+      return EFontTypeAscii.FONT_8_32;
+    } else if (name.equals("FONT_16_48")) {
+      return EFontTypeAscii.FONT_16_48;
+    } else if (name.equals("FONT_12_48")) {
+      return EFontTypeAscii.FONT_12_48;
+    } else if (name.equals("FONT_16_16")) {
+      return EFontTypeAscii.FONT_16_16;
+    } else if (name.equals("FONT_32_24")) {
+      return EFontTypeAscii.FONT_32_24;
+    } else if (name.equals("FONT_24_24")) {
+      return EFontTypeAscii.FONT_24_24;
+    } else if (name.equals("FONT_16_32")) {
+      return EFontTypeAscii.FONT_16_32;
+    } else if (name.equals("FONT_32_48")) {
+      return EFontTypeAscii.FONT_32_48;
+    } else if (name.equals("FONT_24_48")) {
+      return EFontTypeAscii.FONT_24_48;
+    } else {
+      return EFontTypeAscii.FONT_8_16;
     }
   }
 
