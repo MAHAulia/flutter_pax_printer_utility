@@ -58,5 +58,10 @@
 ## Unreleased
 
 * (update) Added `PaxDeviceInfo.getSerial()` to read the terminal's serial number (ported from the Transport POS copy of this plugin)
+* (update) Added `printBarcode` with `PaxBarcodeFormat` (Code 128/39/93, Codabar, EAN-8/13, UPC-A/E, ITF, QR, PDF417, Data Matrix, Aztec)
+* (update) Added `printDivider` for solid or dashed divider lines
+* (update) Added `printRow`, `formatRow`, `PrintColumn` and `charsPerLine` for receipt-style rows with column widths and alignment
+* (update) Added `getPaperSize` (`PaxPaperSize`) and `PaxDeviceInfo.getTermInfo()` (terminal model and firmware versions)
+* (fix) QR bitmaps use the encoded width as the row stride instead of the requested width, which made `setPixels` throw whenever zxing returned a different size
 * (fix) `printImageUrl` replies on the main thread and returns whether the image printed
 * (fix) `printBitmap` skips a missing image instead of passing it to the printer

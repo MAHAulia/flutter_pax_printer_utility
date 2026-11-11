@@ -121,6 +121,64 @@ public class PrinterUtility {
         }
     }
 
+    /// Cached getPrinterSize answer; null until the terminal has given a definite one.
+    private static Integer printerSize;
+    /// PrinterDevException code for "not support" (PRINTER#100).
+    private static final int PRINTER_NOT_SUPPORTED = 100;
+
+    /// The PAX SDK's paper size code (getPrinterSize), or -1 if the terminal cannot report it.
+    ///
+    /// The answer is cached for the life of the app. On terminals without support
+    /// (for example the A910S) the SDK prints a stack trace to System.err on every call,
+    /// so it is only asked once.
+    public int getPrinterSize() {
+        if (printerSize != null) {
+            return printerSize;
+        }
+        try {
+            if (printer == null) {
+                // Not initialised yet; fetch the printer without init(), which would clear a pending job.
+                printer = getDal().getPrinter();
+            }
+            printerSize = getPrinterSizeQuietly();
+            Log.i("SIZE", "PRINTER SIZE " + printerSize);
+            return printerSize;
+        } catch (PrinterDevException e) {
+            if (e.getErrCode() == PRINTER_NOT_SUPPORTED) {
+                // A definite answer, so remember it and stop asking.
+                printerSize = -1;
+                Log.i("SIZE", "Paper size not reported by this terminal: " + e.getMessage());
+            } else {
+                Log.w("SIZE", "Could not read paper size: " + e);
+            }
+            return -1;
+        } catch (RuntimeException | AbstractMethodError e) {
+            // No DAL yet, or firmware without the method: don't cache, it may work later.
+            Log.w("SIZE", "Could not read paper size: " + e);
+            return -1;
+        }
+    }
+
+    /// Calls printer.getPrinterSize() with System.err muted. On unsupported terminals the
+    /// SDK prints its own internal PrintException stack trace before throwing
+    /// PrinterDevException, which getPrinterSize() already handles; muting stops that
+    /// expected failure showing up as a W/System.err stack trace. System.err is restored
+    /// straight after this single call.
+    private static synchronized int getPrinterSizeQuietly() throws PrinterDevException {
+        final java.io.PrintStream err = System.err;
+        System.setErr(new java.io.PrintStream(new java.io.OutputStream() {
+            @Override
+            public void write(int b) {
+                // discard
+            }
+        }));
+        try {
+            return printer.getPrinterSize();
+        } finally {
+            System.setErr(err);
+        }
+    }
+
     public void printBitmapFromString(String text, int width, int height) {
         try {
             QRCodeUtil qrcodeUtility = new QRCodeUtil();

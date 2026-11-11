@@ -48,10 +48,36 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
     deviceInfoChannel.setMethodCallHandler((call, result) -> {
       if (call.method.equals("getSerialNumber")) {
         getSerialNumber(result);
+      } else if (call.method.equals("getTermInfo")) {
+        getTermInfo(result);
       } else {
         result.notImplemented();
       }
     });
+  }
+
+  /// Replies with the terminal info the SDK reports (model, firmware versions, SN, ...),
+  /// keyed by ETermInfoKey name. Keys the terminal does not report are left out.
+  private void getTermInfo(@NonNull Result result) {
+    try {
+      IDAL dal = printerUtility.getDal();
+      if (dal == null) {
+        result.error("PAX_ERROR", "Failed to get DAL instance", null);
+        return;
+      }
+      Map<ETermInfoKey, String> termInfo = dal.getSys().getTermInfo();
+      Map<String, String> info = new java.util.HashMap<>();
+      if (termInfo != null) {
+        for (Map.Entry<ETermInfoKey, String> entry : termInfo.entrySet()) {
+          if (entry.getKey() != null && entry.getValue() != null) {
+            info.put(entry.getKey().name(), entry.getValue());
+          }
+        }
+      }
+      result.success(info);
+    } catch (Exception e) {
+      result.error("PAX_ERROR", e.getMessage(), null);
+    }
   }
 
   /// Replies with the terminal's serial number: ETermInfoKey.SN from the
@@ -239,6 +265,32 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       int height = call.argument("height");
       printerUtility.printBitmap(qrcodeUtility.encodeAsBitmap(qrString, width, height ));
       result.success(true);
+    } else if (call.method.equals("printBarcode")) {
+      String data = call.argument("data");
+      String formatName = call.argument("format");
+      int width = call.argument("width");
+      int height = call.argument("height");
+      int maxWidth = call.argument("maxWidth");
+      Bitmap barcode;
+      try {
+        barcode = QRCodeUtil.encodeBarcode(data, com.google.zxing.BarcodeFormat.valueOf(formatName), width, height, maxWidth);
+      } catch (Exception e) {
+        result.error("INVALID_BARCODE", "Cannot encode \"" + data + "\" as " + formatName + ": " + e.getMessage(), null);
+        return;
+      }
+      if (barcode.getWidth() > maxWidth) {
+        result.error("BARCODE_TOO_WIDE", formatName + " barcode needs " + barcode.getWidth()
+                + " dots but the paper is " + maxWidth + " dots wide; shorten the data", null);
+        return;
+      }
+      result.success(printerUtility.printBitmap(barcode));
+    } else if (call.method.equals("printDivider")) {
+      int width = call.argument("width");
+      int thickness = call.argument("thickness");
+      boolean dashed = call.argument("dashed");
+      result.success(printerUtility.printBitmap(QRCodeUtil.dividerBitmap(width, thickness, dashed)));
+    } else if (call.method.equals("getPrinterSize")) {
+      result.success(printerUtility.getPrinterSize());
     } else if (call.method.equals("start")) {
       final String status = printerUtility.start();
       result.success(status);
