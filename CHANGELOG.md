@@ -57,6 +57,7 @@
 
 ## 0.1.7
 
+* (update) Updated NeptuneLiteApi from V4.09.00 to V4.26.00 (20260408), including the SDK's native libraries for 32-bit ARM
 * (update) Added `PaxDeviceInfo.getSerial()` to read the terminal's serial number
 * (update) Added `printBarcode` with `PaxBarcodeFormat` (Code 128/39/93, Codabar, EAN-8/13, UPC-A/E, ITF, QR, PDF417, Data Matrix, Aztec)
 * (update) Added `printDivider` for solid or dashed divider lines

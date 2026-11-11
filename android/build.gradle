@@ -44,6 +44,6 @@ android {
 }
 
 dependencies {
-    implementation files('libs/NeptuneLiteApi_V4.09.00_20240909.jar')
+    implementation files('libs/NeptuneLiteApi_V4.26.00_20260408.jar')
     implementation 'com.google.zxing:core:3.5.4'
 }
