@@ -48,7 +48,7 @@ buildTypes {
 - [✅] Print barcodes => use printBarcode with a `PaxBarcodeFormat` (see [Barcodes](#barcodes))
 - [✅] Print rows like a receipt with custom width and alignment => use printRow (see [Rows](#rows))
 - [✅] Get the terminal's model and firmware versions => use `PaxDeviceInfo.getTermInfo()`. The PAX SDK has no separate serial number or version for the built-in printer, so these are the terminal's.
-- [✅] Get the paper size => use getPaperSize (`PaxPaperSize.MM_58` / `MM_80`). Terminals that don't support it return `UNKNOWN`; the A910S is one of them.
+- [✅] Get the paper size => use getPaperSize (`PaxPaperSize.MM_58` / `MM_80`). PAX documents this as supported on the SK700 only; other terminals, such as the A910S, return `UNKNOWN`.
 - [ ] Combine with ESC/POS code you already have. Not possible: the PAX SDK has no way to send raw ESC/POS bytes to the printer.
 
 ## Barcodes

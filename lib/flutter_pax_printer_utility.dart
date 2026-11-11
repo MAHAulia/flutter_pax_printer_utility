@@ -367,14 +367,17 @@ class FlutterPaxPrinterUtility {
 
   /// Gets the paper size the printer is set up for.
   ///
-  /// Returns [PaxPaperSize.UNKNOWN] if the terminal cannot report it.
+  /// Uses the PAX SDK's `IPrinter.getPrinterSize()`, which reports the paper
+  /// width in inches: 2 (58mm) or 3 (80mm). PAX documents it as supported on
+  /// the SK700 only (NeptuneLiteApi V4.26); other terminals, such as the
+  /// A910S, return [PaxPaperSize.UNKNOWN], as does any other value.
   static Future<PaxPaperSize> get getPaperSize async {
     final int? size = await _channel.invokeMethod('getPrinterSize');
     switch (size) {
-      case 0:
-        return PaxPaperSize.MM_80;
-      case 1:
+      case 2:
         return PaxPaperSize.MM_58;
+      case 3:
+        return PaxPaperSize.MM_80;
       default:
         return PaxPaperSize.UNKNOWN;
     }

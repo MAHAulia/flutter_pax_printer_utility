@@ -133,13 +133,16 @@ void main() {
       expect(calls.single.arguments['text'], 'A  B\n');
     });
 
-    test('getPaperSize maps the SDK codes', () async {
-      reply = 1;
+    test('getPaperSize maps the SDK sizes in inches', () async {
+      reply = 2;
       expect(await FlutterPaxPrinterUtility.getPaperSize, PaxPaperSize.MM_58);
-      reply = 0;
+      reply = 3;
       expect(await FlutterPaxPrinterUtility.getPaperSize, PaxPaperSize.MM_80);
-      reply = -1;
-      expect(await FlutterPaxPrinterUtility.getPaperSize, PaxPaperSize.UNKNOWN);
+      for (final other in [-1, 0, 1, 4]) {
+        reply = other;
+        expect(
+            await FlutterPaxPrinterUtility.getPaperSize, PaxPaperSize.UNKNOWN);
+      }
     });
   });
 }
