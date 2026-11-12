@@ -66,7 +66,8 @@
 * (fix) QR bitmaps use the encoded width as the row stride instead of the requested width, which made `setPixels` throw whenever zxing returned a different size
 * (fix) All printer calls run in order on one background thread and reply on the main thread. `start()` (and the `printReceipt`/`printQR` templates) no longer block the app's UI while a slip prints, and a second print job can't start before the first one finishes
 * (fix) `printImageUrl` replies on the main thread and returns whether the image printed
-* (fix) `printBitmap` skips a missing image instead of passing it to the printer* (breaking) Printer errors are no longer swallowed: calls throw a `PlatformException` with code `PRINTER_ERROR` (`details`: the PAX SDK error code) instead of returning `true` or an empty status. Unknown status codes are returned as "Unknown printer status N"
+* (fix) `printBitmap` skips a missing image instead of passing it to the printer
+* (breaking) Printer errors are no longer swallowed: calls throw a `PlatformException` with code `PRINTER_ERROR` (`details`: the PAX SDK error code) instead of returning `true` or an empty status. Unknown status codes are returned as "Unknown printer status N"
 * (fix) `printReceiptWithQr` printed the receipt without its QR code: it called the plain `printReceipt` template
 * (fix) `printBitmap`, `printImageAsset` and `printQRCode` return `false` when there is no image to print, instead of `true`
 * (fix) Calls such as `getStatus` work before `init`
