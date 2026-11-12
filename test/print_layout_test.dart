@@ -133,6 +133,14 @@ void main() {
       expect(calls.single.arguments['text'], 'A  B\n');
     });
 
+    test('printReceiptWithQr calls the QR receipt template', () async {
+      reply = 'Success';
+      await FlutterPaxPrinterUtility.printReceiptWithQr('Hi\r\n', 'https://x');
+      expect(calls.single.method, 'printReceiptWithQr');
+      expect(
+          calls.single.arguments, {'text': 'Hi\n', 'qr_string': 'https://x'});
+    });
+
     test('getPaperSize maps the SDK sizes in inches', () async {
       reply = 2;
       expect(await FlutterPaxPrinterUtility.getPaperSize, PaxPaperSize.MM_58);

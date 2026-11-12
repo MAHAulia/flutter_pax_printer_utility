@@ -266,12 +266,30 @@ class _HomePageState extends State<HomePage> {
     await FlutterPaxPrinterUtility.spaceSet(0, 10);
     await FlutterPaxPrinterUtility.setGray(1);
     await FlutterPaxPrinterUtility.printStr('TEST PRINT IMAGE NETWORK', null);
-    await FlutterPaxPrinterUtility.printImageUrl(
+    final printed = await FlutterPaxPrinterUtility.printImageUrl(
       "https://pudim.com.br/pudim.jpg",
     );
     await FlutterPaxPrinterUtility.step(150);
     var status = await FlutterPaxPrinterUtility.start();
-    return status;
+    return '$status (image printed: $printed)';
+  }
+
+  /// Shows how failures are reported: an image that cannot be downloaded
+  /// returns false, and a printer error (such as cutting paper on a terminal
+  /// without a cutter) throws a PlatformException with code PRINTER_ERROR.
+  Future<String> testErrorHandling() async {
+    await FlutterPaxPrinterUtility.init;
+    final printed = await FlutterPaxPrinterUtility.printImageUrl(
+      "https://pub.dev/no-such-image.png",
+    );
+    String cut;
+    try {
+      await FlutterPaxPrinterUtility.cutPaper(0);
+      cut = 'ok';
+    } on PlatformException catch (e) {
+      cut = '${e.code} ${e.message} (${e.details})';
+    }
+    return 'missing image printed: $printed; cutPaper: $cut';
   }
 
   Future<void> _manualPrintWithBitmap() async {
@@ -379,10 +397,26 @@ class _HomePageState extends State<HomePage> {
     setState(() => isLoading = false);
   }
 
+  /// Runs a print job from a button and shows its result, or the
+  /// PlatformException code (for example PRINTER_ERROR when out of paper).
+  Future<void> _report(String label, Future<Object?> Function() job) async {
+    String result;
+    try {
+      result = '$label: ${await job()}';
+    } on PlatformException catch (e) {
+      result = '$label failed: ${e.code} ${e.message} (${e.details})';
+    }
+    if (kDebugMode) {
+      print(result);
+    }
+    if (!mounted) return;
+    setState(() => _lastResult = result);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter Pax Printer Utitlity')),
+      appBar: AppBar(title: const Text('Flutter Pax Printer Utility')),
       body: Center(
         child: ListView(
           padding: const EdgeInsets.all(20.0),
@@ -407,15 +441,26 @@ class _HomePageState extends State<HomePage> {
                   ),
             const Divider(),
             ElevatedButton(
-              onPressed: () async {
-                await FlutterPaxPrinterUtility.printReceipt(
+              onPressed: () => _report(
+                'Receipt',
+                () => FlutterPaxPrinterUtility.printReceipt(
                   "TEST PRINT\n\nOK SUCCESS PRINTING\n\n",
-                );
-              },
+                ),
+              ),
               child: const Text("TEST PRINT RECEIPT"),
             ),
             ElevatedButton(
-              onPressed: () => printQrCode(),
+              onPressed: () => _report(
+                'Receipt with QR',
+                () => FlutterPaxPrinterUtility.printReceiptWithQr(
+                  "TEST PRINT WITH QR\n\nScan me:\n",
+                  "https://pub.dev/packages/flutter_pax_printer_utility",
+                ),
+              ),
+              child: const Text("TEST PRINT RECEIPT WITH QR"),
+            ),
+            ElevatedButton(
+              onPressed: () => _report('QR code', printQrCode),
               child: const Text("TEST PRINT WITH QRCODE"),
             ),
             ElevatedButton(
@@ -423,11 +468,11 @@ class _HomePageState extends State<HomePage> {
               child: const Text("TEST PRINT ROWS, DIVIDERS AND BARCODES"),
             ),
             ElevatedButton(
-              onPressed: () => printImageNetwork(),
+              onPressed: () => _report('Network image', printImageNetwork),
               child: const Text("TEST PRINT IMAGE FROM NETWORK"),
             ),
             ElevatedButton(
-              onPressed: () => printImage(),
+              onPressed: () => _report('Asset image', printImage),
               child: const Text("TEST PRINT IMAGE FROM ASSET"),
             ),
             ElevatedButton(
@@ -439,6 +484,10 @@ class _HomePageState extends State<HomePage> {
                 MaterialPageRoute(builder: (context) => const ReceiptPage()),
               ),
               child: const Text("TEST PRINT RECEIPT FROM BITMAP VIEW"),
+            ),
+            ElevatedButton(
+              onPressed: () => _report('Error handling', testErrorHandling),
+              child: const Text("TEST ERROR HANDLING"),
             ),
           ],
         ),

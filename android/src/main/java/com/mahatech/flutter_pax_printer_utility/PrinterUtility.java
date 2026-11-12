@@ -3,7 +3,6 @@ package com.mahatech.flutter_pax_printer_utility;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.pax.dal.IDAL;
 import com.pax.dal.IPrinter;
@@ -12,119 +11,108 @@ import com.pax.dal.entity.EFontTypeExtCode;
 import com.pax.dal.exceptions.PrinterDevException;
 import com.pax.neptunelite.api.NeptuneLiteUser;
 
+/// Thin wrapper around the PAX SDK printer.
+///
+/// Printer errors are not swallowed: every call throws the SDK's PrinterDevException,
+/// which the plugin reports to Dart as a PRINTER_ERROR PlatformException.
 public class PrinterUtility {
-    private Context _context;
-    private static  IDAL dal;
+    private static final String TAG = "PAX";
+    /// PrinterDevException code for "not support" (PRINTER#100).
+    static final int PRINTER_NOT_SUPPORTED = 100;
+
+    private final Context _context;
+    private static IDAL dal;
     private static IPrinter printer;
-    private static PrinterUtility printerUtility;
 
     public PrinterUtility(Context context) {
         this._context = context;
     }
 
-    public IDAL getDal(){
-        if(dal == null){
+    /// The PAX DAL, or null if the SDK could not provide one.
+    public IDAL getDal() {
+        if (dal == null) {
             try {
                 long start = System.currentTimeMillis();
                 dal = NeptuneLiteUser.getInstance().getDal(this._context);
-                Log.i("Test","Get dal cost:"+(System.currentTimeMillis() - start)+" ms");
-                // Toast.makeText(this._context, "Get dal cost:"+(System.currentTimeMillis() - start)+" ms", Toast.LENGTH_LONG).show();
+                Log.i(TAG, "Get dal cost: " + (System.currentTimeMillis() - start) + " ms");
             } catch (Exception e) {
-                e.printStackTrace();
-                // Toast.makeText(this._context, "error occurred,DAL is null.", Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Could not get the PAX DAL", e);
             }
         }
         return dal;
     }
 
-    public void init() {
+    private IDAL requireDal() {
+        IDAL d = getDal();
+        if (d == null) {
+            throw new IllegalStateException(
+                    "PAX DAL is not available; is this a PAX terminal with the PAX services installed?");
+        }
+        return d;
+    }
+
+    /// The SDK printer, fetched without init() if init has not been called yet.
+    private IPrinter printer() {
+        if (printer == null) {
+            printer = requireDal().getPrinter();
+        }
+        return printer;
+    }
+
+    public void init() throws PrinterDevException {
+        printer = requireDal().getPrinter();
+        printer.init();
+    }
+
+    public String getStatus() throws PrinterDevException {
+        return statusCode2Str(printer().getStatus());
+    }
+
+    public void fontSet(EFontTypeAscii asciiFontType, EFontTypeExtCode cFontType) throws PrinterDevException {
+        printer().fontSet(asciiFontType, cFontType);
+    }
+
+    public void spaceSet(byte wordSpace, byte lineSpace) throws PrinterDevException {
+        printer().spaceSet(wordSpace, lineSpace);
+    }
+
+    /// The font, spacing and gray level the printReceipt / printQR templates use.
+    /// A terminal that does not support one of these settings still prints the
+    /// template with its default; any other printer error is thrown.
+    public void applyTemplateStyle() throws PrinterDevException {
         try {
-            printer = getDal().getPrinter();
-            printer.init();
-            Log.i("INIT",  "INIT");
-            // Toast.makeText(this._context, "SUCCESS INIT PRINTER", Toast.LENGTH_LONG).show();
+            fontSet(EFontTypeAscii.FONT_8_16, EFontTypeExtCode.FONT_16_16);
+            spaceSet((byte) 0, (byte) 10);
+            setGray(1);
         } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("INIT",  String.valueOf(e));
+            if (e.getErrCode() != PRINTER_NOT_SUPPORTED) {
+                throw e;
+            }
+            Log.i(TAG, "Template style not fully supported by this terminal: " + e.getMessage());
         }
     }
 
-    public String getStatus() {
-        try {
-            int status = printer.getStatus();
-            Log.i("STATUS",  String.valueOf(status));
-            // Toast.makeText(this._context, "STATUS : " + String.valueOf(status), Toast.LENGTH_LONG).show();
-            return statusCode2Str(status);
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("STATUS", String.valueOf(e));
-            return "";
-        }
-
+    public void printStr(String str, String charset) throws PrinterDevException {
+        printer().printStr(str, charset);
     }
 
-    public void fontSet(EFontTypeAscii asciiFontType, EFontTypeExtCode cFontType) {
-        try {
-            printer.fontSet(asciiFontType, cFontType);
-            Log.i("FONT",  "SET FONT");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("FONT", String.valueOf(e));
-        }
-
+    public void step(int b) throws PrinterDevException {
+        printer().step(b);
     }
 
-    public void spaceSet(byte wordSpace, byte lineSpace) {
-        try {
-            printer.spaceSet(wordSpace, lineSpace);
-            Log.i("SPACE",  "SPACE SET");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("SPACE", String.valueOf(e));
-        }
-    }
-
-    public void printStr(String str, String charset) {
-        try {
-            printer.printStr(str, charset);
-            Log.i("PRINT",  "PRINT");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("PRINT", String.valueOf(e));
-        }
-
-    }
-
-    public void step(int b) {
-        try {
-            printer.step(b);
-            Log.i("STEP",  "SET STEP");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("STEP", String.valueOf(e));
-        }
-    }
-
-    public boolean printBitmap(Bitmap bitmap) {
+    /// Adds [bitmap] to the print job. Returns false, without printing, if there is
+    /// no bitmap (an image that could not be loaded, decoded or encoded).
+    public boolean printBitmap(Bitmap bitmap) throws PrinterDevException {
         if (bitmap == null) {
-            Log.e("BITMAP", "No bitmap to print (image could not be loaded or decoded)");
+            Log.e(TAG, "No bitmap to print (image could not be loaded, decoded or encoded)");
             return false;
         }
-        try {
-            printer.printBitmap(bitmap);
-            Log.i("BITMAP",  "PRINT BITMAP");
-            return true;
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("BITMAP", String.valueOf(e));
-            return false;
-        }
+        printer().printBitmap(bitmap);
+        return true;
     }
 
     /// Cached getPrinterSize answer; null until the terminal has given a definite one.
     private static Integer printerSize;
-    /// PrinterDevException code for "not support" (PRINTER#100).
-    private static final int PRINTER_NOT_SUPPORTED = 100;
 
     /// The PAX SDK's paper size code (getPrinterSize), or -1 if the terminal cannot report it.
     ///
@@ -136,35 +124,33 @@ public class PrinterUtility {
             return printerSize;
         }
         try {
-            if (printer == null) {
-                // Not initialised yet; fetch the printer without init(), which would clear a pending job.
-                printer = getDal().getPrinter();
-            }
-            printerSize = getPrinterSizeQuietly();
-            Log.i("SIZE", "PRINTER SIZE " + printerSize);
+            // printer() fetches the printer without init(), which would clear a pending job.
+            final IPrinter p = printer();
+            printerSize = getPrinterSizeQuietly(p);
+            Log.i(TAG, "Printer size " + printerSize);
             return printerSize;
         } catch (PrinterDevException e) {
             if (e.getErrCode() == PRINTER_NOT_SUPPORTED) {
                 // A definite answer, so remember it and stop asking.
                 printerSize = -1;
-                Log.i("SIZE", "Paper size not reported by this terminal: " + e.getMessage());
+                Log.i(TAG, "Paper size not reported by this terminal: " + e.getMessage());
             } else {
-                Log.w("SIZE", "Could not read paper size: " + e);
+                Log.w(TAG, "Could not read paper size: " + e);
             }
             return -1;
         } catch (RuntimeException | AbstractMethodError e) {
             // No DAL yet, or firmware without the method: don't cache, it may work later.
-            Log.w("SIZE", "Could not read paper size: " + e);
+            Log.w(TAG, "Could not read paper size: " + e);
             return -1;
         }
     }
 
-    /// Calls printer.getPrinterSize() with System.err muted. On unsupported terminals the
+    /// Calls getPrinterSize() with System.err muted. On unsupported terminals the
     /// SDK prints its own internal PrintException stack trace before throwing
     /// PrinterDevException, which getPrinterSize() already handles; muting stops that
     /// expected failure showing up as a W/System.err stack trace. System.err is restored
     /// straight after this single call.
-    private static synchronized int getPrinterSizeQuietly() throws PrinterDevException {
+    private static synchronized int getPrinterSizeQuietly(IPrinter p) throws PrinterDevException {
         final java.io.PrintStream err = System.err;
         System.setErr(new java.io.PrintStream(new java.io.OutputStream() {
             @Override
@@ -173,179 +159,72 @@ public class PrinterUtility {
             }
         }));
         try {
-            return printer.getPrinterSize();
+            return p.getPrinterSize();
         } finally {
             System.setErr(err);
         }
     }
 
-    public void printBitmapFromString(String text, int width, int height) {
-        try {
-            QRCodeUtil qrcodeUtility = new QRCodeUtil();
-            printer.printBitmap(qrcodeUtility.encodeAsBitmap(text, width, height ));
-            Log.i("BITMAP",  "PRINT BITMAP");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("BITMAP", String.valueOf(e));
-        }
+    /// Prints the job. Blocks until the slip has printed, and returns the SDK's
+    /// status as text ("Success", "Out of paper", ...).
+    public String start() throws PrinterDevException {
+        int res = printer().start();
+        Log.i(TAG, "start: " + res);
+        return statusCode2Str(res);
     }
 
-
-    public String start() {
-        try {
-            int res = printer.start();
-            Log.i("START",  String.valueOf(res));
-            return statusCode2Str(res);
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("START", String.valueOf(e));
-            return "";
-        }
-
+    public void leftIndents(int indent) throws PrinterDevException {
+        printer().leftIndent(indent);
     }
 
-    public void leftIndents(int indent) {
-        try {
-            printer.leftIndent(indent);
-            Log.i("LIND",  "LEFT INDENT");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("LIND", String.valueOf(e));
-        }
+    public int getDotLine() throws PrinterDevException {
+        return printer().getDotLine();
     }
 
-    public int getDotLine() {
-        try {
-            int dotLine = printer.getDotLine();
-            Log.i("DOT",  "GET DOT");
-            return dotLine;
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("DOT", String.valueOf(e));
-            return -2;
-        }
+    public void setGray(int level) throws PrinterDevException {
+        printer().setGray(level);
     }
 
-    public void setGray(int level) {
-        try {
-            printer.setGray(level);
-            Log.i("GRAY",  "SET GRAY");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("GRAY", String.valueOf(e));
-        }
-
+    public void setDoubleWidth(boolean isAscDouble, boolean isLocalDouble) throws PrinterDevException {
+        printer().doubleWidth(isAscDouble, isLocalDouble);
     }
 
-    public void setDoubleWidth(boolean isAscDouble, boolean isLocalDouble) {
-        try {
-            printer.doubleWidth(isAscDouble, isLocalDouble);
-            Log.i("DWTH",  "DOUBLE WIDTH");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("DWTH", String.valueOf(e));
-        }
+    public void setDoubleHeight(boolean isAscDouble, boolean isLocalDouble) throws PrinterDevException {
+        printer().doubleHeight(isAscDouble, isLocalDouble);
     }
 
-    public void setDoubleHeight(boolean isAscDouble, boolean isLocalDouble) {
-        try {
-            printer.doubleHeight(isAscDouble, isLocalDouble);
-            Log.i("DHGH",  "DOUBLE HEIGHT");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("DHGH", String.valueOf(e));
-        }
-
+    public void setInvert(boolean isInvert) throws PrinterDevException {
+        printer().invert(isInvert);
     }
 
-    public void setInvert(boolean isInvert) {
-        try {
-            printer.invert(isInvert);
-            Log.i("INVRT",  "SET INVERT");
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("INVRT", String.valueOf(e));
-        }
-
-    }
-
-    public String cutPaper(int mode) {
-        try {
-            printer.cutPaper(mode);
-            Log.i("CUT",  "CUT PAPER");
-            return "cut paper successful";
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("CUT", String.valueOf(e));
-            return e.toString();
-        }
-    }
-
-    public String getCutMode() {
-        String resultStr = "";
-        try {
-            int mode = printer.getCutMode();
-            Log.i("CUTM",  "GET CUT MODE");
-            switch (mode) {
-                case 0:
-                    resultStr = "Only support full paper cut";
-                    break;
-                case 1:
-                    resultStr = "Only support partial paper cutting ";
-                    break;
-                case 2:
-                    resultStr = "support partial paper and full paper cutting ";
-                    break;
-                case -1:
-                    resultStr = "No cutting knife,not support";
-                    break;
-                default:
-                    break;
-            }
-            return resultStr;
-        } catch (PrinterDevException e) {
-            e.printStackTrace();
-            Log.e("CUTM", String.valueOf(e));
-            return e.toString();
-        }
+    public void cutPaper(int mode) throws PrinterDevException {
+        printer().cutPaper(mode);
     }
 
     public String statusCode2Str(int status) {
-        String res = "";
         switch (status) {
             case 0:
-                res = "Success";
-                break;
+                return "Success";
             case 1:
-                res = "Printer is busy";
-                break;
+                return "Printer is busy";
             case 2:
-                res = "Out of paper";
-                break;
+                return "Out of paper";
             case 3:
-                res = "The format of print data packet error";
-                break;
+                return "The format of print data packet error";
             case 4:
-                res = "Printer malfunctions";
-                break;
+                return "Printer malfunctions";
             case 8:
-                res = "Printer over heats";
-                break;
+                return "Printer over heats";
             case 9:
-                res = "Printer voltage is too low";
-                break;
+                return "Printer voltage is too low";
             case 240:
-                res = "Printing is unfinished";
-                break;
+                return "Printing is unfinished";
             case 252:
-                res = "The printer has not installed font library";
-                break;
+                return "The printer has not installed font library";
             case 254:
-                res = "Data package is too long";
-                break;
+                return "Data package is too long";
             default:
-                break;
+                return "Unknown printer status " + status;
         }
-        return res;
     }
 }

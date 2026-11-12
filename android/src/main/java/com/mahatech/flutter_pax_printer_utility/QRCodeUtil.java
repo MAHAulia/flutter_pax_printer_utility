@@ -3,6 +3,7 @@ package com.mahatech.flutter_pax_printer_utility;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -14,15 +15,14 @@ import com.google.zxing.pdf417.encoder.Dimensions;
 import java.util.EnumMap;
 import java.util.Map;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class QRCodeUtil {
-    private static QRCodeUtil qrCodeUtil;
-
-    public QRCodeUtil() {}
+public final class QRCodeUtil {
+    private QRCodeUtil() {}
 
     public static Bitmap encodeAsBitmap(String source, int width, int height) {
         try {
@@ -97,26 +97,75 @@ public class QRCodeUtil {
         return bitmap;
     }
 
+    /// Largest image download accepted, in bytes.
+    static final int MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+    /// Images are downsampled (by powers of two) until neither side exceeds this.
+    /// Paper is at most 576 dots wide, so this only affects images far larger than
+    /// anything that can be printed, and keeps them from exhausting memory.
+    static final int MAX_IMAGE_SIDE = 2048;
+
+    /// Downloads and decodes the image at [src], or returns null if it cannot be
+    /// fetched (HTTP error, timeout, more than MAX_IMAGE_BYTES) or decoded.
     public static Bitmap getBitmapFromURL(String src) {
         HttpURLConnection connection = null;
         try {
-           URL url = new URL(src);
-           connection = (HttpURLConnection) url.openConnection();
-           connection.setConnectTimeout(15000);
-           connection.setReadTimeout(15000);
-           connection.setDoInput(true);
-           connection.connect();
-           try (InputStream input = connection.getInputStream()) {
-               return BitmapFactory.decodeStream(input);
-           }
-        } catch (IOException e) {
-            e.printStackTrace();
+            URL url = new URL(src);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
+            connection.setDoInput(true);
+            connection.connect();
+            final int status = connection.getResponseCode();
+            if (status != HttpURLConnection.HTTP_OK) {
+                Log.e("PAX", "Image download failed: HTTP " + status + " for " + src);
+                return null;
+            }
+            final byte[] bytes;
+            try (InputStream input = connection.getInputStream()) {
+                bytes = readAtMost(input, MAX_IMAGE_BYTES);
+            }
+            if (bytes == null) {
+                Log.e("PAX", "Image larger than " + MAX_IMAGE_BYTES + " bytes: " + src);
+                return null;
+            }
+            return decodeBounded(bytes);
+        } catch (IOException | ClassCastException e) {
+            // ClassCastException: not an http(s) URL.
+            Log.e("PAX", "Image download failed for " + src + ": " + e);
             return null;
         } finally {
             if (connection != null) {
                 connection.disconnect();
             }
         }
+    }
+
+    /// Reads the whole stream, or returns null once it exceeds [limit] bytes.
+    private static byte[] readAtMost(InputStream input, int limit) throws IOException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final byte[] buffer = new byte[16 * 1024];
+        int n;
+        while ((n = input.read(buffer)) != -1) {
+            if (out.size() + n > limit) {
+                return null;
+            }
+            out.write(buffer, 0, n);
+        }
+        return out.toByteArray();
+    }
+
+    /// Decodes [bytes], downsampling so neither side exceeds MAX_IMAGE_SIDE.
+    static Bitmap decodeBounded(byte[] bytes) {
+        final BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, bounds);
+        int sample = 1;
+        while (bounds.outWidth / sample > MAX_IMAGE_SIDE || bounds.outHeight / sample > MAX_IMAGE_SIDE) {
+            sample *= 2;
+        }
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = sample;
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     }
 
 }

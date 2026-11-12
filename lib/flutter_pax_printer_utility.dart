@@ -4,6 +4,13 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
+/// Prints on PAX terminals through the PAX NeptuneLiteApi SDK.
+///
+/// All calls run in order on one background thread. When the printer reports
+/// an error (for example no paper, or a setting the terminal does not
+/// support), the call throws a [PlatformException] with code `PRINTER_ERROR`;
+/// its `details` is the SDK's error code. Other native failures, such as a
+/// device without the PAX services, throw with code `PAX_ERROR`.
 class FlutterPaxPrinterUtility {
   static const MethodChannel _channel =
       MethodChannel('flutter_pax_printer_utility');
@@ -64,7 +71,7 @@ class FlutterPaxPrinterUtility {
   /// Returns a [Future] that completes with the printer's response as a [String].
   static Future<String?> printReceiptWithQr(
       String text, String qrString) async {
-    final String? response = await _channel.invokeMethod('printReceipt',
+    final String? response = await _channel.invokeMethod('printReceiptWithQr',
         {"text": text.replaceAll("\r", ""), "qr_string": qrString});
     return response;
   }
@@ -169,9 +176,12 @@ class FlutterPaxPrinterUtility {
 
   /// Prints an image from a URL.
   ///
-  /// This method prints the image located at the specified [url].
+  /// This method prints the image located at the specified [url]. The download
+  /// starts straight away; the image still prints in its place in the job.
   ///
-  /// Returns a [Future] that completes with a boolean indicating the success of the operation.
+  /// Returns `false`, without printing anything, if the image cannot be
+  /// downloaded or decoded within 30 seconds (an HTTP error, a timeout, or an
+  /// image over 10 MB). Very large images are downsampled.
   static Future<bool?> printImageUrl(String url) async {
     Map<String, dynamic> arguments = {
       "url": url,

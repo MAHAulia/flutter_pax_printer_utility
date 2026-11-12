@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Printer;
 
 import androidx.annotation.NonNull;
 
@@ -15,10 +14,15 @@ import com.pax.dal.entity.BaseInfo;
 import com.pax.dal.entity.EFontTypeAscii;
 import com.pax.dal.entity.EFontTypeExtCode;
 import com.pax.dal.entity.ETermInfoKey;
+import com.pax.dal.exceptions.PrinterDevException;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -37,7 +41,6 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
   /// Separate channel for terminal information, used by PaxDeviceInfo in Dart.
   private MethodChannel deviceInfoChannel;
   private static PrinterUtility printerUtility;
-  private static QRCodeUtil qrcodeUtility;
 
   /// All PAX SDK calls run on this one background thread, in the order Dart sent them.
   ///
@@ -53,8 +56,35 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
   });
   private static final Handler mainHandler = new Handler(Looper.getMainLooper());
 
+  /// printImageUrl downloads run here, so a slow server never holds the printer thread
+  /// for longer than IMAGE_DOWNLOAD_TIMEOUT_MS.
+  private static final ExecutorService downloadThreads = Executors.newCachedThreadPool(r -> {
+    Thread thread = new Thread(r, "pax-image-download");
+    thread.setDaemon(true);
+    return thread;
+  });
+  /// Longest printImageUrl waits for its image, counted from the call.
+  static final long IMAGE_DOWNLOAD_TIMEOUT_MS = 30000;
+
+  /// The downloaded image, or null if it failed or was not ready by [deadline].
+  private static Bitmap awaitImage(Future<Bitmap> image, long deadline, String url) {
+    try {
+      return image.get(Math.max(0, deadline - System.currentTimeMillis()), TimeUnit.MILLISECONDS);
+    } catch (TimeoutException e) {
+      image.cancel(true);
+      android.util.Log.e("PAX", "Image download timed out: " + url);
+      return null;
+    } catch (ExecutionException e) {
+      android.util.Log.e("PAX", "Image download failed: " + url, e.getCause());
+      return null;
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return null;
+    }
+  }
+
   private interface PrinterCall {
-    void handle(@NonNull MethodCall call, @NonNull Result result) throws Exception;
+    void handle(@NonNull MethodCall call, @NonNull Result result) throws PrinterDevException;
   }
 
   /// A Result that replies on the main thread, as Flutter requires, and at most once.
@@ -88,13 +118,17 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
     }
   }
 
-  /// Runs [handler] on the printer thread. If it throws, Dart gets a PAX_ERROR
-  /// instead of waiting forever for a reply.
+  /// Runs [handler] on the printer thread. If it throws, Dart gets an error instead of
+  /// waiting forever for a reply: PRINTER_ERROR (details: the SDK's error code) for a
+  /// printer error such as no paper, PAX_ERROR for anything else.
   private static void runOnPrinterThread(MethodCall call, Result result, PrinterCall handler) {
     final MainThreadResult reply = new MainThreadResult(result);
     printerThread.execute(() -> {
       try {
         handler.handle(call, reply);
+      } catch (PrinterDevException e) {
+        android.util.Log.e("PAX", call.method + " failed: " + e);
+        reply.error("PRINTER_ERROR", call.method + " failed: " + e.getMessage(), e.getErrCode());
       } catch (Throwable e) {
         android.util.Log.e("PAX", call.method + " failed", e);
         reply.error("PAX_ERROR", call.method + " failed: " + e, null);
@@ -106,9 +140,7 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "flutter_pax_printer_utility");
     channel.setMethodCallHandler(this);
-    printerUtility =
-            new PrinterUtility(flutterPluginBinding.getApplicationContext());
-            qrcodeUtility = new QRCodeUtil();
+    printerUtility = new PrinterUtility(flutterPluginBinding.getApplicationContext());
 
     deviceInfoChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "pax_device_info");
     deviceInfoChannel.setMethodCallHandler((call, result) ->
@@ -190,15 +222,23 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
+    } else if (call.method.equals("printImageUrl")) {
+      // Start the download now, alongside any earlier print jobs, so the printer thread
+      // only waits for what is left of it. The image still keeps its place in the job.
+      final String url = call.argument("url");
+      final long deadline = System.currentTimeMillis() + IMAGE_DOWNLOAD_TIMEOUT_MS;
+      final Future<Bitmap> image = downloadThreads.submit(() -> QRCodeUtil.getBitmapFromURL(url));
+      runOnPrinterThread(call, result,
+          (c, r) -> r.success(printerUtility.printBitmap(awaitImage(image, deadline, url))));
     } else {
       runOnPrinterThread(call, result, this::handlePrinterCall);
     }
   }
 
   /// Handles every printer method. Runs on the printer thread; see printerThread.
-  private void handlePrinterCall(@NonNull MethodCall call, @NonNull Result result) {
+  private void handlePrinterCall(@NonNull MethodCall call, @NonNull Result result)
+      throws PrinterDevException {
     if (call.method.equals("init")) { // instant bind or init
-      printerUtility.getDal();
       printerUtility.init();
       result.success(true);
     } else if (call.method.equals("getStatus")) {
@@ -206,11 +246,8 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       result.success(status);
     }  else if (call.method.equals("printReceipt")) { // instant print receipt
       String text = call.argument("text");
-      printerUtility.getDal();
       printerUtility.init();
-      printerUtility.fontSet(EFontTypeAscii.FONT_8_16, EFontTypeExtCode.FONT_16_16);
-      printerUtility.spaceSet(parseByte("0"), parseByte("10"));
-      printerUtility.setGray(1);
+      printerUtility.applyTemplateStyle();
       printerUtility.printStr(text, null);
       printerUtility.printStr("", null);
       printerUtility.step(150);
@@ -219,15 +256,12 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
     } else if (call.method.equals("printReceiptWithQr")) { // instant print receipt
       String text = call.argument("text");
       String qrString = call.argument("qr_string");
-      printerUtility.getDal();
       printerUtility.init();
-      printerUtility.fontSet(EFontTypeAscii.FONT_8_16, EFontTypeExtCode.FONT_16_16);
-      printerUtility.spaceSet(parseByte("0"), parseByte("10"));
-      printerUtility.setGray(1);
+      printerUtility.applyTemplateStyle();
       printerUtility.printStr(text, null);
       printerUtility.printStr("", null);
       if (qrString != null) {
-        printerUtility.printBitmap(qrcodeUtility.encodeAsBitmap(qrString, 512, 512 ));
+        printerUtility.printBitmap(QRCodeUtil.encodeAsBitmap(qrString, 512, 512));
         printerUtility.printStr("", null);
       }
       printerUtility.step(150);
@@ -239,17 +273,14 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       String text3 = call.argument("text3");
       String text4 = call.argument("text4");
       String qrString = call.argument("qr_string");
-      printerUtility.getDal();
       printerUtility.init();
-      printerUtility.fontSet(EFontTypeAscii.FONT_8_16, EFontTypeExtCode.FONT_16_16);
-      printerUtility.spaceSet(parseByte("0"), parseByte("10"));
-      printerUtility.setGray(1);
+      printerUtility.applyTemplateStyle();
       printerUtility.printStr(text1, null);
       printerUtility.printStr("", null);
       printerUtility.printStr(text2, null);
       printerUtility.printStr(text3, null);
       printerUtility.printStr("", null);
-      printerUtility.printBitmap(qrcodeUtility.encodeAsBitmap(qrString, 512, 512 ));
+      printerUtility.printBitmap(QRCodeUtil.encodeAsBitmap(qrString, 512, 512));
       printerUtility.printStr("", null);
       printerUtility.printStr(text4, null);
       printerUtility.step(150);
@@ -300,25 +331,19 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
       result.success(true);
     } else if (call.method.equals("printBitmap")) {
       byte[] bytes = call.argument("bitmap");
+      // decodeByteArray returns null for bytes that are not an image; printBitmap then returns false.
       Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-      printerUtility.printBitmap(bitmap);
-      result.success(true);
-    } else if (call.method.equals("printImageUrl")) {
-      String url = call.argument("url");
-      // Already off the main thread (printer thread), so download inline; this also
-      // keeps the image in its place in the print job.
-      result.success(printerUtility.printBitmap(qrcodeUtility.getBitmapFromURL(url)));
+      result.success(printerUtility.printBitmap(bitmap));
     }  else if (call.method.equals("printImageAsset")) {
       byte[] bytes = call.argument("bitmap");
+      // decodeByteArray returns null for bytes that are not an image; printBitmap then returns false.
       Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-      printerUtility.printBitmap(bitmap);
-      result.success(true);
+      result.success(printerUtility.printBitmap(bitmap));
     } else if (call.method.equals("printQRCode")) {
       String qrString = call.argument("text");
       int width = call.argument("width");
       int height = call.argument("height");
-      printerUtility.printBitmap(qrcodeUtility.encodeAsBitmap(qrString, width, height ));
-      result.success(true);
+      result.success(printerUtility.printBitmap(QRCodeUtil.encodeAsBitmap(qrString, width, height)));
     } else if (call.method.equals("printBarcode")) {
       String data = call.argument("data");
       String formatName = call.argument("format");
