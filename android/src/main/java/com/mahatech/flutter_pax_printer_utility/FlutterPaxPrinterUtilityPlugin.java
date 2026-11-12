@@ -1,7 +1,5 @@
 package com.mahatech.flutter_pax_printer_utility;
 
-import static java.lang.Byte.parseByte;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
@@ -318,7 +316,7 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
     } else if (call.method.equals("spaceSet")) {
       String wordSpace = call.argument("wordSpace");
       String lineSpace = call.argument("lineSpace");
-      printerUtility.spaceSet(parseByte(wordSpace), parseByte(lineSpace));
+      printerUtility.spaceSet(unsignedByte("wordSpace", wordSpace), unsignedByte("lineSpace", lineSpace));
       result.success(true);
     } else if (call.method.equals("printStr")) {
       String text = call.argument("text");
@@ -405,6 +403,17 @@ public class FlutterPaxPrinterUtilityPlugin implements FlutterPlugin, MethodCall
     } else {
       result.notImplemented();
     }
+  }
+
+  /// Parses a 0-255 value for an SDK `byte` parameter. The SDK documents spacing up
+  /// to 255 in a (signed) Java byte, so values above 127 are passed as their
+  /// two's-complement byte, which the SDK reads as unsigned.
+  private static byte unsignedByte(String name, String value) {
+    final int parsed = Integer.parseInt(value);
+    if (parsed < 0 || parsed > 255) {
+      throw new IllegalArgumentException(name + " must be 0-255, was " + parsed);
+    }
+    return (byte) parsed;
   }
 
   /// Maps a Dart EFontTypeAscii name to the PAX SDK constant, defaulting to FONT_8_16.

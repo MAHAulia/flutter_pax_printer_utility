@@ -121,10 +121,14 @@ class FlutterPaxPrinterUtility {
 
   /// Sets the word and line spacing.
   ///
-  /// This method sets the specified [wordSpace] and [lineSpace] for the printer.
+  /// [wordSpace] is extra dots between characters and [lineSpace] extra dots
+  /// between lines, each 0-255 (the default for both is 0 on thermal
+  /// printers). The setting lasts until the next [spaceSet] or [init].
   ///
-  /// Returns a [Future] that completes with a boolean indicating the success of the operation.
+  /// Throws an [ArgumentError] if either value is outside 0-255.
   static Future<bool?> spaceSet(int wordSpace, int lineSpace) async {
+    RangeError.checkValueInInterval(wordSpace, 0, 255, 'wordSpace');
+    RangeError.checkValueInInterval(lineSpace, 0, 255, 'lineSpace');
     Map<String, dynamic> arguments = {
       "wordSpace": wordSpace.toString(),
       "lineSpace": lineSpace.toString(),

@@ -141,6 +141,16 @@ void main() {
           calls.single.arguments, {'text': 'Hi\n', 'qr_string': 'https://x'});
     });
 
+    test('spaceSet accepts 0-255 and rejects other values', () async {
+      await FlutterPaxPrinterUtility.spaceSet(0, 255);
+      expect(calls.single.arguments, {'wordSpace': '0', 'lineSpace': '255'});
+      expect(() => FlutterPaxPrinterUtility.spaceSet(256, 0),
+          throwsA(isA<RangeError>()));
+      expect(() => FlutterPaxPrinterUtility.spaceSet(0, -1),
+          throwsA(isA<RangeError>()));
+      expect(calls, hasLength(1));
+    });
+
     test('getPaperSize maps the SDK sizes in inches', () async {
       reply = 2;
       expect(await FlutterPaxPrinterUtility.getPaperSize, PaxPaperSize.MM_58);

@@ -58,7 +58,7 @@ await FlutterPaxPrinterUtility.fontSet(
     EFontTypeAscii.FONT_12_24, EFontTypeExtCode.FONT_24_24);
 
 // Extra dots between characters and between lines.
-await FlutterPaxPrinterUtility.spaceSet(0, 10);
+await FlutterPaxPrinterUtility.spaceSet(0, 10); // each 0-255
 
 // Print darkness: 1 is the default; 50-500 sets a percentage of the default.
 await FlutterPaxPrinterUtility.setGray(1);

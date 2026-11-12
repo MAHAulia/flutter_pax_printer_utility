@@ -76,3 +76,4 @@
 * (fix) Removed native libraries built for the wrong ABI (a 32-bit `libDCL.so` in `arm64-v8a`, ARM binaries in `x86`) and the duplicate `armeabi` folder, halving the plugin's native libraries
 * (update) The minimum Flutter version is 3.7.3, matching the Dart 2.19.2 minimum
 * (update) README: usage examples for every feature, error codes, and release builds
+* (fix) `spaceSet` accepts the SDK's full 0-255 range; values above 127 used to fail. Values outside 0-255 throw an `ArgumentError`
